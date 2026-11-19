@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Férias da Equipe · Gestão de Colaboradores</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Identidade +A Educação */
+  --chumbo:#3D3C3C; --vermelho:#BB243E; --teal:#2BABB3; --prata:#B9B7B6; --off:#EAE9E8; --apoio:#808080;
+  --teal-esc:#228E95; --teal-suave:#D4EFF1; --verm-suave:#F5DCE1;
+  --bg:#F7F7F6; --card:#fff; --ink:var(--chumbo); --muted:var(--apoio); --line:#E2E1E0;
+  --brand:var(--chumbo); --brand2:var(--off); --acao:var(--teal-esc);
+  /* opções no calendário do colaborador */
+  --p11:var(--teal); --p12:var(--teal-suave); --p21:var(--chumbo); --p22:var(--prata);
+  --ok:var(--teal-esc); --okbg:var(--teal-suave); --warn:#7a5a00; --warnbg:var(--off); --err:var(--vermelho); --errbg:var(--verm-suave);
+  --blk:var(--verm-suave);
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Poppins,system-ui,"Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--ink);font-size:14px}
+button,input,select,textarea{font:inherit}
+.hidden{display:none!important}
+header{background:var(--chumbo);color:#fff;padding:10px 22px 10px 26px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;border-left:6px solid var(--vermelho)}
+header img{height:38px;display:block}
+header h1{font-size:16px;margin:0;font-weight:600;padding-left:14px;border-left:1px solid rgba(255,255,255,.25)}
+header .sp{flex:1}
+header .who{opacity:.8;font-size:13px}
+header button{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.3);padding:6px 12px;border-radius:4px;cursor:pointer;font-size:13px}
+header button.on{background:var(--teal);border-color:var(--teal);font-weight:600}
+main{max-width:1200px;margin:0 auto;padding:22px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:4px;padding:18px 20px;margin-bottom:16px}
+.card h2{font-size:17px;margin:0 0 14px;font-weight:700;position:relative;padding-bottom:8px}
+.card h2::after{content:"";position:absolute;left:0;bottom:0;width:36px;height:3px;background:var(--vermelho)}
+.card h3{font-size:14px;margin:0 0 8px;font-weight:600}
+.muted{color:var(--muted)}
+.small{font-size:12px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+.row>*{flex:0 0 auto}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted)}
+input[type=text],input[type=email],input[type=password],input[type=date],input[type=number],select,textarea{border:1px solid #cfcdcc;border-radius:4px;padding:7px 9px;background:#fff;color:var(--ink);font-size:14px}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--teal);outline-offset:0;border-color:var(--teal)}
+textarea{width:100%;min-height:60px}
+.btn{background:var(--acao);color:#fff;border:0;border-radius:4px;padding:8px 16px;cursor:pointer;font-weight:600}
+.btn:hover{filter:brightness(.95)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.sec{background:#fff;color:var(--acao);border:1px solid var(--acao)}
+.btn.ghost{background:#fff;color:var(--chumbo);border:1px solid var(--line);font-weight:500}
+.btn.ok{background:var(--acao)}
+.btn.danger{background:#fff;color:var(--vermelho);border:1px solid var(--vermelho);font-weight:500}
+.btn.sm{padding:4px 10px;font-size:12px}
+.msg{padding:10px 12px;border-radius:4px;margin:10px 0;font-size:13px;border-left:3px solid transparent}
+.msg.err{background:var(--verm-suave);color:var(--vermelho);border-left-color:var(--vermelho)}
+.msg.ok{background:var(--teal-suave);color:#17666b;border-left-color:var(--teal)}
+.msg.warn{background:var(--off);color:var(--chumbo);border-left-color:var(--vermelho)}
+.msg.info{background:var(--off);color:var(--chumbo);border-left-color:var(--teal)}
+.badge{display:inline-block;padding:2px 8px;border-radius:3px;font-size:11px;font-weight:600;white-space:nowrap}
+.b-pendente{background:var(--off);color:var(--chumbo)}
+.b-aprovada{background:var(--teal-suave);color:#17666b}
+.b-ajuste{background:var(--verm-suave);color:var(--vermelho)}
+.b-nao{background:#fff;color:var(--muted);border:1px solid var(--line)}
+.b-exec{background:var(--chumbo);color:#fff}
+.b-adm{background:var(--teal-esc);color:#fff}
+/* login */
+.login{max-width:400px;margin:56px auto;border-top:4px solid var(--vermelho)}
+.login .logo{display:block;width:120px;margin:4px auto 6px}
+.login .sub{text-align:center;color:var(--muted);font-size:13px;margin:0 0 16px}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:14px}
+.tabs button{background:none;border:0;padding:8px 12px;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent}
+.tabs button.on{color:var(--chumbo);border-bottom-color:var(--teal);font-weight:600}
+.login label.f{margin-bottom:10px}
+.login input{width:100%}
+/* formulário */
+.periods{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px}
+.period{border:1px solid var(--line);border-radius:4px;padding:14px;background:#fcfcfc}
+.opt{border:2px solid var(--line);border-radius:4px;padding:10px;margin-top:10px;cursor:pointer;background:#fff;transition:border-color .15s}
+.opt.active{border-color:var(--teal)}
+.opt .tag{display:inline-block;width:12px;height:12px;border-radius:2px;vertical-align:-1px;margin-right:6px;border:1px solid rgba(0,0,0,.08)}
+.opt .res{margin-top:6px;font-size:12px}
+.opt .e{color:var(--vermelho)} .opt .w{color:var(--apoio)} .opt .g{color:var(--teal-esc);font-weight:500}
+.choice{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.choice label{border:1px solid var(--line);border-radius:4px;padding:10px 14px;cursor:pointer;display:flex;gap:8px;align-items:center;background:#fff}
+.choice label.on{border-color:var(--teal);background:var(--teal-suave)}
+/* calendário */
+.cal{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px}
+.mon h4{margin:0 0 4px;font-size:13px;text-transform:capitalize;font-weight:600}
+.mgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.mgrid .h{font-size:10px;color:var(--muted);text-align:center}
+.d{font-size:11px;text-align:center;padding:4px 0;border-radius:2px;cursor:pointer;position:relative;user-select:none}
+.d:hover{outline:1px solid var(--teal)}
+.d.we{color:var(--apoio)}
+.d.past{color:#cfcdcc;cursor:default}
+.d.blk{background:var(--verm-suave);color:var(--vermelho);cursor:not-allowed;font-weight:600}
+.d.blkx{background:repeating-linear-gradient(45deg,var(--verm-suave) 0 3px,#fff 3px 6px);color:var(--vermelho);cursor:not-allowed;font-weight:600}
+.d.o11{background:var(--p11);color:#fff}.d.o12{background:var(--p12)}.d.o21{background:var(--p21);color:#fff}.d.o22{background:var(--p22)}
+.d.multi{background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.55) 0 3px,transparent 3px 6px)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin:8px 0}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:5px;vertical-align:-2px;border:1px solid rgba(0,0,0,.08)}
+/* tabelas */
+table{border-collapse:collapse;width:100%}
+th,td{text-align:left;padding:7px 9px;vertical-align:top;font-size:13px}
+th{font-size:12px;color:#fff;font-weight:600;background:var(--chumbo)}
+tr:nth-child(odd) td{background:#fafafa}
+/* kpis */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:16px}
+.kpi{background:#fff;border:1px solid var(--line);border-radius:4px;padding:12px 14px}
+.kpi span{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;font-weight:500}
+.kpi b{display:block;font-size:30px;font-weight:700;color:var(--teal);line-height:1.2;margin-top:4px}
+.kpi.alert b{color:var(--vermelho)}
+.subnav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.subnav button{background:#fff;border:1px solid var(--line);border-radius:4px;padding:6px 14px;cursor:pointer;color:var(--chumbo)}
+.subnav button.on{background:var(--chumbo);color:#fff;border-color:var(--chumbo);font-weight:600}
+/* linha do tempo */
+.tl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:4px;background:#fff}
+.tl{position:relative}
+.tl-row{display:flex;border-bottom:1px solid #f0efee}
+.tl-name{position:sticky;left:0;z-index:3;background:#fff;width:200px;min-width:200px;padding:6px 8px;font-size:12px;border-right:1px solid var(--line);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tl-head .tl-name,.tl-head .tl-track{background:var(--off)}
+.tl-track{position:relative;height:38px}
+.tl-head .tl-track{height:24px}
+.tl-occ .tl-track{height:22px}
+.tl-m{position:absolute;top:0;bottom:0;border-left:1px solid #d9d8d7;font-size:11px;color:var(--chumbo);padding:4px 4px;text-transform:capitalize;white-space:nowrap;font-weight:500}
+.tl-blk{position:absolute;top:0;bottom:0;background:rgba(187,36,62,.13);z-index:0}
+.tl-blk.x{background:repeating-linear-gradient(45deg,rgba(187,36,62,.16) 0 4px,transparent 4px 8px)}
+.tl-bar{position:absolute;height:15px;border-radius:2px;font-size:10px;color:#fff;padding:0 3px;overflow:hidden;white-space:nowrap;z-index:1;cursor:default;line-height:15px;font-weight:500}
+.tl-bar.l1{top:3px}.tl-bar.l2{top:20px}
+.tl-bar.p11,.tl-bar.p21{background:var(--chumbo)}
+.tl-bar.p12,.tl-bar.p22{background:var(--prata);color:var(--chumbo)}
+.tl-bar.apr{background:var(--teal)!important;color:#fff!important}
+.tl-bar.desc{opacity:.2}
+.tl-bar.conf{box-shadow:0 0 0 2px var(--vermelho)}
+.tl-occ-c{position:absolute;top:2px;height:18px;font-size:9px;text-align:center;line-height:18px}
+.conf-list{font-size:12px;margin-top:4px}
+.conf-list .x{color:var(--vermelho);font-weight:500} .conf-list .y{color:#8a4b57}
+.req{border:1px solid var(--line);border-left:3px solid var(--prata);border-radius:4px;padding:14px;margin-bottom:12px;background:#fff}
+.req.st-aprovada{border-left-color:var(--teal)} .req.st-ajuste{border-left-color:var(--vermelho)} .req.st-pendente{border-left-color:var(--chumbo)}
+.req-h{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+.req-h b{font-size:15px}
+.opt-tbl tr.apr td{background:var(--teal-suave)}
+.opt-tbl tr.desc td{color:#a9a7a6}
+/* modal */
+.modal-bg{position:fixed;inset:0;background:rgba(45,44,44,.45);display:flex;align-items:center;justify-content:center;z-index:50}
+.modal{background:#fff;border-radius:4px;padding:20px;max-width:480px;width:92%;border-top:4px solid var(--vermelho)}
+.modal h3{margin:0 0 10px}
+.modal .acts{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
+.code{font-family:ui-monospace,Consolas,monospace;font-size:18px;letter-spacing:3px;font-weight:700;background:var(--teal-suave);color:#17666b;padding:4px 10px;border-radius:3px}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--chumbo);color:#fff;padding:10px 16px;border-radius:4px;z-index:60;font-size:13px;max-width:90%;border-left:4px solid var(--teal)}
+.rules li{margin:3px 0}
+footer{text-align:center;color:var(--muted);font-size:11px;padding:10px 0 24px}
+@media (max-width:640px){main{padding:12px}.tl-name{width:120px;min-width:120px}header h1{display:none}}
+</style>
+</head>
+<body>
+<header id="hdr" class="hidden">
+  <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODciIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA4NyA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEuMTA5OTggNjEuMTkxNkgzLjQ4MzU1VjYyLjI1MDlIMFY1Ni42MzMySDMuNDQzMzRWNTcuNjkyNkgxLjExMDc2VjU4Ljg4ODNIMy4yNDMwNFY1OS45MzE2SDEuMTEwNzZMMS4xMDk5OCA2MS4xOTE2WiIgZmlsbD0iI0ZGRkZGRiIvPgo8cGF0aCBkPSJNMTIuNzc2OCA1Ni42MzU2QzEzLjEzODQgNTYuNjI3IDEzLjQ5NzcgNTYuNjk0OCAxMy44MzEyIDU2LjgzNDVDMTQuMTY0OCA1Ni45NzQyIDE0LjQ2NDkgNTcuMTgyNiAxNC43MTIgNTcuNDQ2MkMxNS4yMTA3IDU3Ljk5MjkgMTUuNDg3MSA1OC43MDU2IDE1LjQ4NzEgNTkuNDQ0OEMxNS40ODcxIDYwLjE4NDEgMTUuMjEwNyA2MC44OTY4IDE0LjcxMiA2MS40NDM1QzE0LjQ2NSA2MS43MDcyIDE0LjE2NDkgNjEuOTE1OCAxMy44MzEzIDYyLjA1NTdDMTMuNDk3OCA2Mi4xOTU1IDEzLjEzODUgNjIuMjYzNCAxMi43NzY4IDYyLjI1NDlIMTAuNTM5OVY1Ni42MzcyTDEyLjc3NjggNTYuNjM1NlpNMTIuNzc2OCA2MS4xOTU2QzEyLjk5ODQgNjEuMjAzNiAxMy4yMTkyIDYxLjE2NDUgMTMuNDI0NCA2MS4wODA3QzEzLjYyOTcgNjAuOTk3IDEzLjgxNDcgNjAuODcwNiAxMy45NjcyIDYwLjcxQzE0LjI2MzYgNjAuMzU1MSAxNC40MjYgNTkuOTA3NiAxNC40MjYgNTkuNDQ1NkMxNC40MjYgNTguOTgzNiAxNC4yNjM2IDU4LjUzNjIgMTMuOTY3MiA1OC4xODEyQzEzLjgxNDcgNTguMDIwNiAxMy42Mjk3IDU3Ljg5NDMgMTMuNDI0NCA1Ny44MTA1QzEzLjIxOTIgNTcuNzI2OCAxMi45OTg0IDU3LjY4NzcgMTIuNzc2OCA1Ny42OTU3SDExLjY1MDdWNjEuMTkxNUwxMi43NzY4IDYxLjE5NTZaIiBmaWxsPSIjRkZGRkZGIi8+CjxwYXRoIGQ9Ik0yNC42MTE3IDYyLjM2NzJDMjQuMDQ4NyA2Mi4zODk2IDIzLjQ5NzcgNjIuMjAwNyAyMy4wNjc0IDYxLjgzNzZDMjIuODY3MyA2MS42NjAzIDIyLjcwOTIgNjEuNDQwOCAyMi42MDQ3IDYxLjE5NDlDMjIuNTAwMiA2MC45NDkxIDIyLjQ1MiA2MC42ODMxIDIyLjQ2MzQgNjAuNDE2M1Y1Ni42MzU2SDIzLjU2NjFWNjAuMzI3MkMyMy41NTkzIDYwLjQ1NDcgMjMuNTc4MiA2MC41ODIzIDIzLjYyMTcgNjAuNzAyNEMyMy42NjUzIDYwLjgyMjQgMjMuNzMyNSA2MC45MzI2IDIzLjgxOTUgNjEuMDI2MkMyNC4wNSA2MS4xOTMxIDI0LjMyNzQgNjEuMjgyOSAyNC42MTIxIDYxLjI4MjlDMjQuODk2OSA2MS4yODI5IDI1LjE3NDQgNjEuMTkzMSAyNS40MDQ4IDYxLjAyNjJDMjUuNDkxOCA2MC45MzI2IDI1LjU1OSA2MC44MjI0IDI1LjYwMjYgNjAuNzAyNEMyNS42NDYxIDYwLjU4MjMgMjUuNjY1IDYwLjQ1NDcgMjUuNjU4MiA2MC4zMjcyVjU2LjYzNTZIMjYuNzY4MlY2MC40MTYzQzI2Ljc3OTcgNjAuNjgzIDI2LjczMTUgNjAuOTQ5IDI2LjYyNzIgNjEuMTk0OEMyNi41MjI4IDYxLjQ0MDcgMjYuMzY0OSA2MS42NjAyIDI2LjE2NDkgNjEuODM3NkMyNS43MzE5IDYyLjIwMTkgMjUuMTc3NyA2Mi4zOTA4IDI0LjYxMTcgNjIuMzY3MloiIGZpbGw9IiNGRkZGRkYiLz4KPHBhdGggZD0iTTM2LjcxMiA2Mi4zNjcyQzM2LjMyMjcgNjIuMzc5MyAzNS45MzUxIDYyLjMxMDYgMzUuNTczOCA2Mi4xNjU2QzM1LjIxMjQgNjIuMDIwNSAzNC44ODUyIDYxLjgwMjMgMzQuNjEyOCA2MS41MjQ1QzM0LjA4MDMgNjAuOTYxOCAzMy43ODM2IDYwLjIxNzEgMzMuNzgzNiA1OS40NDMyQzMzLjc4MzYgNTguNjY5MyAzNC4wODAzIDU3LjkyNDYgMzQuNjEyOCA1Ny4zNjE4QzM0Ljg4NTkgNTcuMDg1MiAzNS4yMTMzIDU2Ljg2OCAzNS41NzQ2IDU2LjcyMzdDMzUuOTM1OCA1Ni41NzkzIDM2LjMyMzEgNTYuNTExMSAzNi43MTIgNTYuNTIzMkMzNy4yMDU4IDU2LjUxOTMgMzcuNjkyMiA1Ni42NDIzIDM4LjEyNDQgNTYuODgwNEMzOC41NDI2IDU3LjEwNTggMzguODkxNSA1Ny40NDAzIDM5LjEzMzkgNTcuODQ4MkwzOC4xNzY3IDU4LjQwMTlDMzguMDM5MyA1OC4xNTIzIDM3LjgzMjYgNTcuOTQ3NCAzNy41ODE1IDU3LjgxMkMzNy4yMjkyIDU3LjYzMTggMzYuODI5OSA1Ny41NjQgMzYuNDM3NyA1Ny42MTc5QzM2LjA0NTUgNTcuNjcxNyAzNS42NzkzIDU3Ljg0NDUgMzUuMzg4OSA1OC4xMTNDMzUuMDY0MSA1OC40Nzk3IDM0Ljg4NDkgNTguOTUyMiAzNC44ODQ5IDU5LjQ0MTZDMzQuODg0OSA1OS45MzEgMzUuMDY0MSA2MC40MDM1IDM1LjM4ODkgNjAuNzcwMkMzNS41NjIgNjAuOTQyMyAzNS43Njg5IDYxLjA3NjggMzUuOTk2NiA2MS4xNjUyQzM2LjIyNDMgNjEuMjUzNiAzNi40Njc5IDYxLjI5NCAzNi43MTIgNjEuMjgzOEMzNy4wMTYzIDYxLjI4ODEgMzcuMzE2NyA2MS4yMTQ5IDM3LjU4NDggNjEuMDcxMUMzNy44MzQ4IDYwLjkzOTMgMzguMDQwNCA2MC43MzcgMzguMTc1OSA2MC40ODkzTDM5LjEzMzEgNjEuMDQzQzM4Ljg5MTYgNjEuNDUgMzguNTQ0MSA2MS43ODQyIDM4LjEyNzcgNjIuMDEwMUMzNy42OTQ2IDYyLjI0OSAzNy4yMDY5IDYyLjM3MjEgMzYuNzEyIDYyLjM2NzJaIiBmaWxsPSIjRkZGRkZGIi8+CjxwYXRoIGQ9Ik00OS43NzE5IDYyLjI1NDlMNDkuNDE0IDYxLjI0MzdINDcuMDk5OUw0Ni43NjIxIDYyLjI1NDlINDUuNTYzN0w0Ny41MzUxIDU2LjYzNzJINDguOTEwNUw1MC44OTcyIDYyLjI1NDlINDkuNzcxOVpNNDcuNDYxOSA2MC4yMDc2SDQ5LjA0NzJMNDguMjM0IDU3LjkxMTZMNDcuNDYxOSA2MC4yMDc2WiIgZmlsbD0iI0ZGRkZGRiIvPgo8cGF0aCBkPSJNNjAuMTkwNCA2MS4yODM4QzYwLjQ5NDcgNjEuMjg4MSA2MC43OTUgNjEuMjE0OSA2MS4wNjMxIDYxLjA3MTFDNjEuMzEzMSA2MC45MzkyIDYxLjUxODYgNjAuNzM2OSA2MS42NTQyIDYwLjQ4OTNMNjIuNjExNCA2MS4wNDNDNjIuNDA4IDYxLjM4NTEgNjIuMTI4NyA2MS42NzYxIDYxLjc5NSA2MS44OTM3QzYxLjQ1MTMgNjIuMTE5NiA2MS4wNjMzIDYyLjI3MDEgNjAuNjU2OSA2Mi4zMzUxVjYyLjYyNEM2MC44MDc2IDYyLjY1NzYgNjAuOTQ2NSA2Mi43MzExIDYxLjA1OSA2Mi44MzY3QzYxLjExNDIgNjIuODkwMSA2MS4xNTczIDYyLjk1NDUgNjEuMTg1NyA2My4wMjU4QzYxLjIxNDIgNjMuMDk3IDYxLjIyNzIgNjMuMTczNCA2MS4yMjM5IDYzLjI0OTlDNjEuMjIzOSA2My44MTIyIDYwLjYzNDEgNjQuMDU4NCA1OS40NTQ0IDYzLjk4ODNWNjMuMjU4QzYwLjAzMzUgNjMuMjk1NCA2MC4zMjMxIDYzLjI0MiA2MC4zMjMxIDYzLjA5NzVDNjAuMzIzMSA2Mi45OTA1IDYwLjE1NDIgNjIuOTIzNiA1OS44MTY0IDYyLjg5NjlWNjIuMzQzMUM1OS4xMDQzIDYyLjI3NzggNTguNDQ1MyA2MS45Mzk4IDU3Ljk3NzcgNjEuNDAwMUM1Ny40OTgzIDYwLjgyOTUgNTcuMjQ1NSA2MC4xMDMyIDU3LjI2NyA1OS4zNTg5QzU3LjI4ODQgNTguNjE0NiA1Ny41ODI4IDU3LjkwNDEgNTguMDk0MyA1Ny4zNjE5QzU4LjM2NzUgNTcuMDg1MiA1OC42OTUxIDU2Ljg2NzkgNTkuMDU2NSA1Ni43MjM2QzU5LjQxNzkgNTYuNTc5MyA1OS44MDUzIDU2LjUxMTEgNjAuMTk0NCA1Ni41MjMyQzYwLjY4ODEgNTYuNTE5MyA2MS4xNzQ2IDU2LjY0MjMgNjEuNjA2OCA1Ni44ODA0QzYyLjAyNDkgNTcuMTA1OCA2Mi4zNzM4IDU3LjQ0MDMgNjIuNjE2MiA1Ny44NDgyTDYxLjY1OTEgNTguNDAxOUM2MS41MjE2IDU4LjE1MjQgNjEuMzE1IDU3Ljk0NzUgNjEuMDYzOSA1Ny44MTIxQzYwLjcxMTYgNTcuNjMxOCA2MC4zMTIzIDU3LjU2NDEgNTkuOTIgNTcuNjE3OUM1OS41Mjc4IDU3LjY3MTcgNTkuMTYxNyA1Ny44NDQ2IDU4Ljg3MTMgNTguMTEzQzU4LjU0NjUgNTguNDc5NyA1OC4zNjcyIDU4Ljk1MjIgNTguMzY3MiA1OS40NDE2QzU4LjM2NzIgNTkuOTMxIDU4LjU0NjUgNjAuNDAzNSA1OC44NzEzIDYwLjc3MDJDNTkuMDQzOSA2MC45NDE4IDU5LjI1MDEgNjEuMDc2IDU5LjQ3NzEgNjEuMTY0NEM1OS43MDQxIDYxLjI1MjggNTkuOTQ2OSA2MS4yOTM0IDYwLjE5MDQgNjEuMjgzOFoiIGZpbGw9IiNGRkZGRkYiLz4KPHBhdGggZD0iTTczLjI0OTQgNjIuMjU1N0w3Mi44OTE1IDYxLjI0NDVINzAuNTc3NEw3MC4yMzk2IDYyLjI1NTdINjkuMDQxMkw3MS4wMTI2IDU2LjYzOEg3Mi4zODc5TDc0LjM3NDcgNjIuMjU1N0g3My4yNDk0Wk03MS42MDcgNTUuOTYxNUM3MS40NTE1IDU1Ljg1NDUgNzEuMzQxNSA1NS44MTE3IDcxLjI3NzIgNTUuODMzMUM3MS4yMTI4IDU1Ljg1NDUgNzEuMTgwNiA1NS45NjE1IDcxLjE4MDYgNTYuMTU0MUg3MC4zNDQyQzcwLjMzODMgNTUuOTQxMiA3MC4zNjU0IDU1LjcyODcgNzAuNDI0NiA1NS41MjQxQzcwLjQ2NTEgNTUuMzc2NCA3MC41NDQzIDU1LjI0MjEgNzAuNjUzOSA1NS4xMzQ5QzcwLjc0NzggNTUuMDUwNCA3MC44NjMzIDU0Ljk5MzQgNzAuOTg3NiA1NC45NzA0QzcxLjEyMTQgNTQuOTQ2MSA3MS4yNTkxIDU0Ljk1MyA3MS4zODk4IDU0Ljk5MDVDNzEuNTM4NSA1NS4wMzIzIDcxLjY3OTYgNTUuMDk3MyA3MS44MDggNTUuMTgzMUM3MS45NjM1IDU1LjI5MDEgNzIuMDcyMiA1NS4zMzI4IDcyLjEzMzggNTUuMzExNEM3Mi4xOTU1IDU1LjI5IDcyLjIyNjMgNTUuMTgzMSA3Mi4yMjYzIDU0Ljk5MDVINzMuMDcwOUM3My4wOCA1NS4yNDcxIDczLjAzNDcgNTUuNTAyOCA3Mi45MzgyIDU1Ljc0MDhDNzIuODc1NiA1NS45MDgxIDcyLjc1MjEgNTYuMDQ1NyA3Mi41OTIyIDU2LjEyNkM3Mi40NDUxIDU2LjE4ODIgNzIuMjgyNiA1Ni4yMDUgNzIuMTI1OCA1Ni4xNzQyQzcxLjk0MDUgNTYuMTM4MSA3MS43NjQxIDU2LjA2NTkgNzEuNjA3IDU1Ljk2MTVaTTcwLjkzOTQgNjAuMjA4NEg3Mi41MjQ3TDcxLjcxNCA1Ny45MTRMNzAuOTM5NCA2MC4yMDg0WiIgZmlsbD0iI0ZGRkZGRiIvPgo8cGF0aCBkPSJNODUuNzM1OCA2MS41MjA2Qzg1LjI1NDEgNjIuMDA4MiA4NC42MTc2IDYyLjMxMzkgODMuOTM1MSA2Mi4zODUzQzgzLjI1MjYgNjIuNDU2NyA4Mi41NjY0IDYyLjI4OTUgODEuOTkzNyA2MS45MTIyQzgxLjQyMTEgNjEuNTM0OSA4MC45OTc1IDYwLjk3MDkgODAuNzk1MyA2MC4zMTY2QzgwLjU5MzEgNTkuNjYyMyA4MC42MjQ3IDU4Ljk1ODIgODAuODg1IDU4LjMyNDdDODEuMTQ1MyA1Ny42OTExIDgxLjYxOCA1Ny4xNjc0IDgyLjIyMjMgNTYuODQyOUM4Mi44MjY2IDU2LjUxODQgODMuNTI1IDU2LjQxMzQgODQuMTk4NCA1Ni41NDU3Qzg0Ljg3MTcgNTYuNjc4IDg1LjQ3ODEgNTcuMDM5NCA4NS45MTQgNTcuNTY4MkM4Ni4zNDk5IDU4LjA5NzEgODYuNTg4MyA1OC43NjA1IDg2LjU4ODQgNTkuNDQ1MkM4Ni41OTU4IDU5LjgzMDkgODYuNTIzOSA2MC4yMTQgODYuMzc3MyA2MC41NzA5Qzg2LjIzMDYgNjAuOTI3OCA4Ni4wMTI0IDYxLjI1MSA4NS43MzU4IDYxLjUyMDZaTTgyLjM2NDEgNjAuNzY2MkM4Mi43MTMxIDYxLjA5ODUgODMuMTc3IDYxLjI4MzggODMuNjU5NCA2MS4yODM4Qzg0LjE0MTkgNjEuMjgzOCA4NC42MDU3IDYxLjA5ODUgODQuOTU0OCA2MC43NjYyQzg1LjI5MTkgNjAuNDA3MyA4NS40Nzk1IDU5LjkzMzkgODUuNDc5NSA1OS40NDJDODUuNDc5NSA1OC45NTAxIDg1LjI5MTkgNTguNDc2OCA4NC45NTQ4IDU4LjExNzlDODQuNjA3IDU3Ljc4MzIgODQuMTQyNiA1Ny41OTYyIDgzLjY1OTQgNTcuNTk2MkM4My4xNzYyIDU3LjU5NjIgODIuNzExOSA1Ny43ODMyIDgyLjM2NDEgNTguMTE3OUM4Mi4wMjcyIDU4LjQ3NjggODEuODM5NyA1OC45NTAyIDgxLjgzOTcgNTkuNDQyQzgxLjgzOTcgNTkuOTMzOCA4Mi4wMjcyIDYwLjQwNzIgODIuMzY0MSA2MC43NjYyWiIgZmlsbD0iI0ZGRkZGRiIvPgo8cGF0aCBkPSJNNDQuNDMyMSAxOC4wOEgyMi4yMTY1VjI2LjYxNTZINDQuNDMyMVYxOC4wOFoiIGZpbGw9IiNBREFBQTkiLz4KPHBhdGggZD0iTTI2LjQ5MzkgMjIuMzQ3OEgxNy45MzlWNDQuNTEzNUgyNi40OTM5VjIyLjM0NzhaIiBmaWxsPSIjMDBBMEE2Ii8+CjxwYXRoIGQ9Ik0yNi40OTA2IDI2LjYxNTdIMC4wMDA3OTM0NTdWMTguMDc3NkgxNy45MzczVjAuMTgxMzk2SDI2LjQ5MDZWMjYuNjE1N1oiIGZpbGw9IiNDRTAwMkUiLz4KPHBhdGggZD0iTTg2Ljg1NzIgMC4xODIxOUg3OC4zMDIzVjQ0LjUxMzVIODYuODU3MlYwLjE4MjE5WiIgZmlsbD0iI0ZGRkZGRiIvPgo8cGF0aCBkPSJNNjQuMjg4MiA0NC42OTU3QzU5Ljg1ODMgNDQuNjk1NyA1NS41Mjc4IDQzLjM4NSA1MS44NDQ1IDQwLjkyOTRDNDguMTYxMSAzOC40NzM4IDQ1LjI5MDMgMzQuOTgzNSA0My41OTUgMzAuOUM0MS44OTk4IDI2LjgxNjUgNDEuNDU2MiAyMi4zMjMxIDQyLjMyMDUgMTcuOTg4QzQzLjE4NDcgMTMuNjUyOSA0NS4zMTc5IDkuNjcwOTQgNDguNDUwMyA2LjU0NTU0QzUxLjU4MjggMy40MjAxNCA1NS41NzM3IDEuMjkxNzEgNTkuOTE4NiAwLjQyOTQxN0M2NC4yNjM0IC0wLjQzMjg3OSA2OC43NjY5IDAuMDA5NjgzOTEgNzIuODU5NyAxLjcwMTE0Qzc2Ljk1MjQgMy4zOTI1OSA4MC40NTA1IDYuMjU2OTUgODIuOTExNiA5LjkzMjA0Qzg1LjM3MjggMTMuNjA3MSA4Ni42ODY0IDE3LjkyNzkgODYuNjg2NCAyMi4zNDc4Qzg2LjY3OTggMjguMjcyOCA4NC4zMTc5IDMzLjk1MzMgODAuMTE4OSAzOC4xNDI5Qzc1LjkxOTggNDIuMzMyNSA3MC4yMjY2IDQ0LjY4OTEgNjQuMjg4MiA0NC42OTU3Wk02NC4yODgyIDguNTM1NjNDNjEuNTUwMyA4LjUzNTYzIDU4Ljg3MzggOS4zNDU3IDU2LjU5NzMgMTAuODYzNEM1NC4zMjA4IDEyLjM4MTEgNTIuNTQ2NCAxNC41MzgzIDUxLjQ5ODcgMTcuMDYyMUM1MC40NTA5IDE5LjU4NiA1MC4xNzY3IDIyLjM2MzIgNTAuNzEwOSAyNS4wNDI1QzUxLjI0NSAyNy43MjE4IDUyLjU2MzUgMzAuMTgyOSA1NC40OTk1IDMyLjExNDVDNTYuNDM1NiAzNC4wNDYyIDU4LjkwMjIgMzUuMzYxNyA2MS41ODc2IDM1Ljg5NDZDNjQuMjcyOSAzNi40Mjc2IDY3LjA1NjMgMzYuMTU0MSA2OS41ODU4IDM1LjEwODdDNzIuMTE1NCAzNC4wNjMyIDc0LjI3NzQgMzIuMjkyOSA3NS43OTg1IDMwLjAyMTVDNzcuMzE5NiAyNy43NTAxIDc4LjEzMTUgMjUuMDc5NiA3OC4xMzE1IDIyLjM0NzhDNzguMTI3NSAxOC42ODU5IDc2LjY2NzcgMTUuMTc1IDc0LjA3MjUgMTIuNTg1NkM3MS40NzcyIDkuOTk2MTcgNjcuOTU4NSA4LjUzOTY3IDY0LjI4ODIgOC41MzU2M1oiIGZpbGw9IiNGRkZGRkYiLz4KPC9zdmc+Cg==" alt="+A Educação">
+  <h1>Gestão de Colaboradores · Férias</h1>
+  <span class="sp"></span>
+  <button id="nav-colab" class="on" onclick="go('colab')">Minha solicitação</button>
+  <button id="nav-admin" class="hidden" onclick="go('admin')">Painel do gestor</button>
+  <span class="who" id="who"></span>
+  <button onclick="modalSenha()">Trocar senha</button>
+  <button onclick="logout()">Sair</button>
+</header>
+
+<div id="v-login" class="login card">
+  <img class="logo" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODciIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA4NyA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEuMTA5OTggNjEuMTkxNkgzLjQ4MzU1VjYyLjI1MDlIMFY1Ni42MzMySDMuNDQzMzRWNTcuNjkyNkgxLjExMDc2VjU4Ljg4ODNIMy4yNDMwNFY1OS45MzE2SDEuMTEwNzZMMS4xMDk5OCA2MS4xOTE2WiIgZmlsbD0iIzJEMkMyQyIvPgo8cGF0aCBkPSJNMTIuNzc2OCA1Ni42MzU2QzEzLjEzODQgNTYuNjI3IDEzLjQ5NzcgNTYuNjk0OCAxMy44MzEyIDU2LjgzNDVDMTQuMTY0OCA1Ni45NzQyIDE0LjQ2NDkgNTcuMTgyNiAxNC43MTIgNTcuNDQ2MkMxNS4yMTA3IDU3Ljk5MjkgMTUuNDg3MSA1OC43MDU2IDE1LjQ4NzEgNTkuNDQ0OEMxNS40ODcxIDYwLjE4NDEgMTUuMjEwNyA2MC44OTY4IDE0LjcxMiA2MS40NDM1QzE0LjQ2NSA2MS43MDcyIDE0LjE2NDkgNjEuOTE1OCAxMy44MzEzIDYyLjA1NTdDMTMuNDk3OCA2Mi4xOTU1IDEzLjEzODUgNjIuMjYzNCAxMi43NzY4IDYyLjI1NDlIMTAuNTM5OVY1Ni42MzcyTDEyLjc3NjggNTYuNjM1NlpNMTIuNzc2OCA2MS4xOTU2QzEyLjk5ODQgNjEuMjAzNiAxMy4yMTkyIDYxLjE2NDUgMTMuNDI0NCA2MS4wODA3QzEzLjYyOTcgNjAuOTk3IDEzLjgxNDcgNjAuODcwNiAxMy45NjcyIDYwLjcxQzE0LjI2MzYgNjAuMzU1MSAxNC40MjYgNTkuOTA3NiAxNC40MjYgNTkuNDQ1NkMxNC40MjYgNTguOTgzNiAxNC4yNjM2IDU4LjUzNjIgMTMuOTY3MiA1OC4xODEyQzEzLjgxNDcgNTguMDIwNiAxMy42Mjk3IDU3Ljg5NDMgMTMuNDI0NCA1Ny44MTA1QzEzLjIxOTIgNTcuNzI2OCAxMi45OTg0IDU3LjY4NzcgMTIuNzc2OCA1Ny42OTU3SDExLjY1MDdWNjEuMTkxNUwxMi43NzY4IDYxLjE5NTZaIiBmaWxsPSIjMkQyQzJDIi8+CjxwYXRoIGQ9Ik0yNC42MTE3IDYyLjM2NzJDMjQuMDQ4NyA2Mi4zODk2IDIzLjQ5NzcgNjIuMjAwNyAyMy4wNjc0IDYxLjgzNzZDMjIuODY3MyA2MS42NjAzIDIyLjcwOTIgNjEuNDQwOCAyMi42MDQ3IDYxLjE5NDlDMjIuNTAwMiA2MC45NDkxIDIyLjQ1MiA2MC42ODMxIDIyLjQ2MzQgNjAuNDE2M1Y1Ni42MzU2SDIzLjU2NjFWNjAuMzI3MkMyMy41NTkzIDYwLjQ1NDcgMjMuNTc4MiA2MC41ODIzIDIzLjYyMTcgNjAuNzAyNEMyMy42NjUzIDYwLjgyMjQgMjMuNzMyNSA2MC45MzI2IDIzLjgxOTUgNjEuMDI2MkMyNC4wNSA2MS4xOTMxIDI0LjMyNzQgNjEuMjgyOSAyNC42MTIxIDYxLjI4MjlDMjQuODk2OSA2MS4yODI5IDI1LjE3NDQgNjEuMTkzMSAyNS40MDQ4IDYxLjAyNjJDMjUuNDkxOCA2MC45MzI2IDI1LjU1OSA2MC44MjI0IDI1LjYwMjYgNjAuNzAyNEMyNS42NDYxIDYwLjU4MjMgMjUuNjY1IDYwLjQ1NDcgMjUuNjU4MiA2MC4zMjcyVjU2LjYzNTZIMjYuNzY4MlY2MC40MTYzQzI2Ljc3OTcgNjAuNjgzIDI2LjczMTUgNjAuOTQ5IDI2LjYyNzIgNjEuMTk0OEMyNi41MjI4IDYxLjQ0MDcgMjYuMzY0OSA2MS42NjAyIDI2LjE2NDkgNjEuODM3NkMyNS43MzE5IDYyLjIwMTkgMjUuMTc3NyA2Mi4zOTA4IDI0LjYxMTcgNjIuMzY3MloiIGZpbGw9IiMyRDJDMkMiLz4KPHBhdGggZD0iTTM2LjcxMiA2Mi4zNjcyQzM2LjMyMjcgNjIuMzc5MyAzNS45MzUxIDYyLjMxMDYgMzUuNTczOCA2Mi4xNjU2QzM1LjIxMjQgNjIuMDIwNSAzNC44ODUyIDYxLjgwMjMgMzQuNjEyOCA2MS41MjQ1QzM0LjA4MDMgNjAuOTYxOCAzMy43ODM2IDYwLjIxNzEgMzMuNzgzNiA1OS40NDMyQzMzLjc4MzYgNTguNjY5MyAzNC4wODAzIDU3LjkyNDYgMzQuNjEyOCA1Ny4zNjE4QzM0Ljg4NTkgNTcuMDg1MiAzNS4yMTMzIDU2Ljg2OCAzNS41NzQ2IDU2LjcyMzdDMzUuOTM1OCA1Ni41NzkzIDM2LjMyMzEgNTYuNTExMSAzNi43MTIgNTYuNTIzMkMzNy4yMDU4IDU2LjUxOTMgMzcuNjkyMiA1Ni42NDIzIDM4LjEyNDQgNTYuODgwNEMzOC41NDI2IDU3LjEwNTggMzguODkxNSA1Ny40NDAzIDM5LjEzMzkgNTcuODQ4MkwzOC4xNzY3IDU4LjQwMTlDMzguMDM5MyA1OC4xNTIzIDM3LjgzMjYgNTcuOTQ3NCAzNy41ODE1IDU3LjgxMkMzNy4yMjkyIDU3LjYzMTggMzYuODI5OSA1Ny41NjQgMzYuNDM3NyA1Ny42MTc5QzM2LjA0NTUgNTcuNjcxNyAzNS42NzkzIDU3Ljg0NDUgMzUuMzg4OSA1OC4xMTNDMzUuMDY0MSA1OC40Nzk3IDM0Ljg4NDkgNTguOTUyMiAzNC44ODQ5IDU5LjQ0MTZDMzQuODg0OSA1OS45MzEgMzUuMDY0MSA2MC40MDM1IDM1LjM4ODkgNjAuNzcwMkMzNS41NjIgNjAuOTQyMyAzNS43Njg5IDYxLjA3NjggMzUuOTk2NiA2MS4xNjUyQzM2LjIyNDMgNjEuMjUzNiAzNi40Njc5IDYxLjI5NCAzNi43MTIgNjEuMjgzOEMzNy4wMTYzIDYxLjI4ODEgMzcuMzE2NyA2MS4yMTQ5IDM3LjU4NDggNjEuMDcxMUMzNy44MzQ4IDYwLjkzOTMgMzguMDQwNCA2MC43MzcgMzguMTc1OSA2MC40ODkzTDM5LjEzMzEgNjEuMDQzQzM4Ljg5MTYgNjEuNDUgMzguNTQ0MSA2MS43ODQyIDM4LjEyNzcgNjIuMDEwMUMzNy42OTQ2IDYyLjI0OSAzNy4yMDY5IDYyLjM3MjEgMzYuNzEyIDYyLjM2NzJaIiBmaWxsPSIjMkQyQzJDIi8+CjxwYXRoIGQ9Ik00OS43NzE5IDYyLjI1NDlMNDkuNDE0IDYxLjI0MzdINDcuMDk5OUw0Ni43NjIxIDYyLjI1NDlINDUuNTYzN0w0Ny41MzUxIDU2LjYzNzJINDguOTEwNUw1MC44OTcyIDYyLjI1NDlINDkuNzcxOVpNNDcuNDYxOSA2MC4yMDc2SDQ5LjA0NzJMNDguMjM0IDU3LjkxMTZMNDcuNDYxOSA2MC4yMDc2WiIgZmlsbD0iIzJEMkMyQyIvPgo8cGF0aCBkPSJNNjAuMTkwNCA2MS4yODM4QzYwLjQ5NDcgNjEuMjg4MSA2MC43OTUgNjEuMjE0OSA2MS4wNjMxIDYxLjA3MTFDNjEuMzEzMSA2MC45MzkyIDYxLjUxODYgNjAuNzM2OSA2MS42NTQyIDYwLjQ4OTNMNjIuNjExNCA2MS4wNDNDNjIuNDA4IDYxLjM4NTEgNjIuMTI4NyA2MS42NzYxIDYxLjc5NSA2MS44OTM3QzYxLjQ1MTMgNjIuMTE5NiA2MS4wNjMzIDYyLjI3MDEgNjAuNjU2OSA2Mi4zMzUxVjYyLjYyNEM2MC44MDc2IDYyLjY1NzYgNjAuOTQ2NSA2Mi43MzExIDYxLjA1OSA2Mi44MzY3QzYxLjExNDIgNjIuODkwMSA2MS4xNTczIDYyLjk1NDUgNjEuMTg1NyA2My4wMjU4QzYxLjIxNDIgNjMuMDk3IDYxLjIyNzIgNjMuMTczNCA2MS4yMjM5IDYzLjI0OTlDNjEuMjIzOSA2My44MTIyIDYwLjYzNDEgNjQuMDU4NCA1OS40NTQ0IDYzLjk4ODNWNjMuMjU4QzYwLjAzMzUgNjMuMjk1NCA2MC4zMjMxIDYzLjI0MiA2MC4zMjMxIDYzLjA5NzVDNjAuMzIzMSA2Mi45OTA1IDYwLjE1NDIgNjIuOTIzNiA1OS44MTY0IDYyLjg5NjlWNjIuMzQzMUM1OS4xMDQzIDYyLjI3NzggNTguNDQ1MyA2MS45Mzk4IDU3Ljk3NzcgNjEuNDAwMUM1Ny40OTgzIDYwLjgyOTUgNTcuMjQ1NSA2MC4xMDMyIDU3LjI2NyA1OS4zNTg5QzU3LjI4ODQgNTguNjE0NiA1Ny41ODI4IDU3LjkwNDEgNTguMDk0MyA1Ny4zNjE5QzU4LjM2NzUgNTcuMDg1MiA1OC42OTUxIDU2Ljg2NzkgNTkuMDU2NSA1Ni43MjM2QzU5LjQxNzkgNTYuNTc5MyA1OS44MDUzIDU2LjUxMTEgNjAuMTk0NCA1Ni41MjMyQzYwLjY4ODEgNTYuNTE5MyA2MS4xNzQ2IDU2LjY0MjMgNjEuNjA2OCA1Ni44ODA0QzYyLjAyNDkgNTcuMTA1OCA2Mi4zNzM4IDU3LjQ0MDMgNjIuNjE2MiA1Ny44NDgyTDYxLjY1OTEgNTguNDAxOUM2MS41MjE2IDU4LjE1MjQgNjEuMzE1IDU3Ljk0NzUgNjEuMDYzOSA1Ny44MTIxQzYwLjcxMTYgNTcuNjMxOCA2MC4zMTIzIDU3LjU2NDEgNTkuOTIgNTcuNjE3OUM1OS41Mjc4IDU3LjY3MTcgNTkuMTYxNyA1Ny44NDQ2IDU4Ljg3MTMgNTguMTEzQzU4LjU0NjUgNTguNDc5NyA1OC4zNjcyIDU4Ljk1MjIgNTguMzY3MiA1OS40NDE2QzU4LjM2NzIgNTkuOTMxIDU4LjU0NjUgNjAuNDAzNSA1OC44NzEzIDYwLjc3MDJDNTkuMDQzOSA2MC45NDE4IDU5LjI1MDEgNjEuMDc2IDU5LjQ3NzEgNjEuMTY0NEM1OS43MDQxIDYxLjI1MjggNTkuOTQ2OSA2MS4yOTM0IDYwLjE5MDQgNjEuMjgzOFoiIGZpbGw9IiMyRDJDMkMiLz4KPHBhdGggZD0iTTczLjI0OTQgNjIuMjU1N0w3Mi44OTE1IDYxLjI0NDVINzAuNTc3NEw3MC4yMzk2IDYyLjI1NTdINjkuMDQxMkw3MS4wMTI2IDU2LjYzOEg3Mi4zODc5TDc0LjM3NDcgNjIuMjU1N0g3My4yNDk0Wk03MS42MDcgNTUuOTYxNUM3MS40NTE1IDU1Ljg1NDUgNzEuMzQxNSA1NS44MTE3IDcxLjI3NzIgNTUuODMzMUM3MS4yMTI4IDU1Ljg1NDUgNzEuMTgwNiA1NS45NjE1IDcxLjE4MDYgNTYuMTU0MUg3MC4zNDQyQzcwLjMzODMgNTUuOTQxMiA3MC4zNjU0IDU1LjcyODcgNzAuNDI0NiA1NS41MjQxQzcwLjQ2NTEgNTUuMzc2NCA3MC41NDQzIDU1LjI0MjEgNzAuNjUzOSA1NS4xMzQ5QzcwLjc0NzggNTUuMDUwNCA3MC44NjMzIDU0Ljk5MzQgNzAuOTg3NiA1NC45NzA0QzcxLjEyMTQgNTQuOTQ2MSA3MS4yNTkxIDU0Ljk1MyA3MS4zODk4IDU0Ljk5MDVDNzEuNTM4NSA1NS4wMzIzIDcxLjY3OTYgNTUuMDk3MyA3MS44MDggNTUuMTgzMUM3MS45NjM1IDU1LjI5MDEgNzIuMDcyMiA1NS4zMzI4IDcyLjEzMzggNTUuMzExNEM3Mi4xOTU1IDU1LjI5IDcyLjIyNjMgNTUuMTgzMSA3Mi4yMjYzIDU0Ljk5MDVINzMuMDcwOUM3My4wOCA1NS4yNDcxIDczLjAzNDcgNTUuNTAyOCA3Mi45MzgyIDU1Ljc0MDhDNzIuODc1NiA1NS45MDgxIDcyLjc1MjEgNTYuMDQ1NyA3Mi41OTIyIDU2LjEyNkM3Mi40NDUxIDU2LjE4ODIgNzIuMjgyNiA1Ni4yMDUgNzIuMTI1OCA1Ni4xNzQyQzcxLjk0MDUgNTYuMTM4MSA3MS43NjQxIDU2LjA2NTkgNzEuNjA3IDU1Ljk2MTVaTTcwLjkzOTQgNjAuMjA4NEg3Mi41MjQ3TDcxLjcxNCA1Ny45MTRMNzAuOTM5NCA2MC4yMDg0WiIgZmlsbD0iIzJEMkMyQyIvPgo8cGF0aCBkPSJNODUuNzM1OCA2MS41MjA2Qzg1LjI1NDEgNjIuMDA4MiA4NC42MTc2IDYyLjMxMzkgODMuOTM1MSA2Mi4zODUzQzgzLjI1MjYgNjIuNDU2NyA4Mi41NjY0IDYyLjI4OTUgODEuOTkzNyA2MS45MTIyQzgxLjQyMTEgNjEuNTM0OSA4MC45OTc1IDYwLjk3MDkgODAuNzk1MyA2MC4zMTY2QzgwLjU5MzEgNTkuNjYyMyA4MC42MjQ3IDU4Ljk1ODIgODAuODg1IDU4LjMyNDdDODEuMTQ1MyA1Ny42OTExIDgxLjYxOCA1Ny4xNjc0IDgyLjIyMjMgNTYuODQyOUM4Mi44MjY2IDU2LjUxODQgODMuNTI1IDU2LjQxMzQgODQuMTk4NCA1Ni41NDU3Qzg0Ljg3MTcgNTYuNjc4IDg1LjQ3ODEgNTcuMDM5NCA4NS45MTQgNTcuNTY4MkM4Ni4zNDk5IDU4LjA5NzEgODYuNTg4MyA1OC43NjA1IDg2LjU4ODQgNTkuNDQ1MkM4Ni41OTU4IDU5LjgzMDkgODYuNTIzOSA2MC4yMTQgODYuMzc3MyA2MC41NzA5Qzg2LjIzMDYgNjAuOTI3OCA4Ni4wMTI0IDYxLjI1MSA4NS43MzU4IDYxLjUyMDZaTTgyLjM2NDEgNjAuNzY2MkM4Mi43MTMxIDYxLjA5ODUgODMuMTc3IDYxLjI4MzggODMuNjU5NCA2MS4yODM4Qzg0LjE0MTkgNjEuMjgzOCA4NC42MDU3IDYxLjA5ODUgODQuOTU0OCA2MC43NjYyQzg1LjI5MTkgNjAuNDA3MyA4NS40Nzk1IDU5LjkzMzkgODUuNDc5NSA1OS40NDJDODUuNDc5NSA1OC45NTAxIDg1LjI5MTkgNTguNDc2OCA4NC45NTQ4IDU4LjExNzlDODQuNjA3IDU3Ljc4MzIgODQuMTQyNiA1Ny41OTYyIDgzLjY1OTQgNTcuNTk2MkM4My4xNzYyIDU3LjU5NjIgODIuNzExOSA1Ny43ODMyIDgyLjM2NDEgNTguMTE3OUM4Mi4wMjcyIDU4LjQ3NjggODEuODM5NyA1OC45NTAyIDgxLjgzOTcgNTkuNDQyQzgxLjgzOTcgNTkuOTMzOCA4Mi4wMjcyIDYwLjQwNzIgODIuMzY0MSA2MC43NjYyWiIgZmlsbD0iIzJEMkMyQyIvPgo8cGF0aCBkPSJNNDQuNDMyMSAxOC4wOEgyMi4yMTY1VjI2LjYxNTZINDQuNDMyMVYxOC4wOFoiIGZpbGw9IiNBREFBQTkiLz4KPHBhdGggZD0iTTI2LjQ5MzkgMjIuMzQ3OEgxNy45MzlWNDQuNTEzNUgyNi40OTM5VjIyLjM0NzhaIiBmaWxsPSIjMDBBMEE2Ii8+CjxwYXRoIGQ9Ik0yNi40OTA2IDI2LjYxNTdIMC4wMDA3OTM0NTdWMTguMDc3NkgxNy45MzczVjAuMTgxMzk2SDI2LjQ5MDZWMjYuNjE1N1oiIGZpbGw9IiNDRTAwMkUiLz4KPHBhdGggZD0iTTg2Ljg1NzIgMC4xODIxOUg3OC4zMDIzVjQ0LjUxMzVIODYuODU3MlYwLjE4MjE5WiIgZmlsbD0iIzJEMkMyQyIvPgo8cGF0aCBkPSJNNjQuMjg4MiA0NC42OTU3QzU5Ljg1ODMgNDQuNjk1NyA1NS41Mjc4IDQzLjM4NSA1MS44NDQ1IDQwLjkyOTRDNDguMTYxMSAzOC40NzM4IDQ1LjI5MDMgMzQuOTgzNSA0My41OTUgMzAuOUM0MS44OTk4IDI2LjgxNjUgNDEuNDU2MiAyMi4zMjMxIDQyLjMyMDUgMTcuOTg4QzQzLjE4NDcgMTMuNjUyOSA0NS4zMTc5IDkuNjcwOTQgNDguNDUwMyA2LjU0NTU0QzUxLjU4MjggMy40MjAxNCA1NS41NzM3IDEuMjkxNzEgNTkuOTE4NiAwLjQyOTQxN0M2NC4yNjM0IC0wLjQzMjg3OSA2OC43NjY5IDAuMDA5NjgzOTEgNzIuODU5NyAxLjcwMTE0Qzc2Ljk1MjQgMy4zOTI1OSA4MC40NTA1IDYuMjU2OTUgODIuOTExNiA5LjkzMjA0Qzg1LjM3MjggMTMuNjA3MSA4Ni42ODY0IDE3LjkyNzkgODYuNjg2NCAyMi4zNDc4Qzg2LjY3OTggMjguMjcyOCA4NC4zMTc5IDMzLjk1MzMgODAuMTE4OSAzOC4xNDI5Qzc1LjkxOTggNDIuMzMyNSA3MC4yMjY2IDQ0LjY4OTEgNjQuMjg4MiA0NC42OTU3Wk02NC4yODgyIDguNTM1NjNDNjEuNTUwMyA4LjUzNTYzIDU4Ljg3MzggOS4zNDU3IDU2LjU5NzMgMTAuODYzNEM1NC4zMjA4IDEyLjM4MTEgNTIuNTQ2NCAxNC41MzgzIDUxLjQ5ODcgMTcuMDYyMUM1MC40NTA5IDE5LjU4NiA1MC4xNzY3IDIyLjM2MzIgNTAuNzEwOSAyNS4wNDI1QzUxLjI0NSAyNy43MjE4IDUyLjU2MzUgMzAuMTgyOSA1NC40OTk1IDMyLjExNDVDNTYuNDM1NiAzNC4wNDYyIDU4LjkwMjIgMzUuMzYxNyA2MS41ODc2IDM1Ljg5NDZDNjQuMjcyOSAzNi40Mjc2IDY3LjA1NjMgMzYuMTU0MSA2OS41ODU4IDM1LjEwODdDNzIuMTE1NCAzNC4wNjMyIDc0LjI3NzQgMzIuMjkyOSA3NS43OTg1IDMwLjAyMTVDNzcuMzE5NiAyNy43NTAxIDc4LjEzMTUgMjUuMDc5NiA3OC4xMzE1IDIyLjM0NzhDNzguMTI3NSAxOC42ODU5IDc2LjY2NzcgMTUuMTc1IDc0LjA3MjUgMTIuNTg1NkM3MS40NzcyIDkuOTk2MTcgNjcuOTU4NSA4LjUzOTY3IDY0LjI4ODIgOC41MzU2M1oiIGZpbGw9IiMyRDJDMkMiLz4KPC9zdmc+Cg==" alt="+A Educação"><p class="sub">Gestão de Colaboradores · <b>Férias da Equipe</b></p>
+  <div class="tabs"><button id="t-in" class="on" onclick="loginTab('in')">Entrar</button><button id="t-pa" onclick="loginTab('pa')">Primeiro acesso</button></div>
+  <div id="f-in">
+    <label class="f">E-mail<input type="email" id="l-email" autocomplete="username"></label>
+    <label class="f">Senha<input type="password" id="l-senha" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"></label>
+    <button class="btn" style="width:100%" onclick="doLogin()">Entrar</button>
+    <p class="small muted">Esqueceu a senha? Peça ao gestor um novo código de acesso.</p>
+  </div>
+  <div id="f-pa" class="hidden">
+    <p class="small muted">Use o código de 6 dígitos que o gestor te enviou para criar sua senha.</p>
+    <label class="f">E-mail<input type="email" id="p-email"></label>
+    <label class="f">Código de acesso<input type="text" id="p-cod" inputmode="numeric" maxlength="6"></label>
+    <label class="f">Crie uma senha (mín. 6 caracteres)<input type="password" id="p-senha" autocomplete="new-password"></label>
+    <label class="f">Repita a senha<input type="password" id="p-senha2" autocomplete="new-password" onkeydown="if(event.key==='Enter')doPrimeiro()"></label>
+    <button class="btn" style="width:100%" onclick="doPrimeiro()">Criar senha e entrar</button>
+  </div>
+  <div id="l-msg"></div>
+</div>
+
+<main id="v-colab" class="hidden"></main>
+<main id="v-admin" class="hidden"></main>
+<div id="modal-root"></div>
+<footer>+A Educação · Gestão de Colaboradores · uso interno</footer>
+
+<script>
+// ================= Configuração =================
+const SUPABASE_URL = 'https://tbvfnhxippvjbokuycxc.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_80bsmOqm7F414QI4AtYTyw_SYJJmOMz';
+
+// ================= Utilitários =================
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const MESES = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+const DSEM = ['dom','seg','ter','qua','qui','sex','sáb'];
+const TIPOS = {grande_evento:'Grande evento', evento_presencial:'Evento presencial', periodo_restrito:'Período restrito', outro:'Outro'};
+const STATUS = {pendente:'Aguardando aprovação', aprovada:'Aprovada', ajuste:'Ajuste solicitado'};
+function dn(s){ const [y,m,d]=s.split('-').map(Number); return Math.round(Date.UTC(y,m-1,d)/864e5); }
+function nd(n){ const t=new Date(n*864e5); return t.toISOString().slice(0,10); }
+function dow(s){ return new Date(dn(s)*864e5).getUTCDay(); }
+function br(s){ if(!s) return ''; const [y,m,d]=s.split('-'); return `${d}/${m}/${y}`; }
+function brs(s){ if(!s) return ''; const [y,m,d]=s.split('-'); return `${d}/${m}`; }
+function hoje(){ const t=new Date(); return nd(Math.round(Date.UTC(t.getFullYear(),t.getMonth(),t.getDate())/864e5)); }
+function overlap(a1,a2,b1,b2){ const s=Math.max(dn(a1),dn(b1)), e=Math.min(dn(a2),dn(b2)); return e>=s ? e-s+1 : 0; }
+function fmtDT(s){ if(!s) return ''; const d=new Date(s); return d.toLocaleDateString('pt-BR')+' '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}); }
+function toast(t, ms=3000){ const d=document.createElement('div'); d.className='toast'; d.textContent=t; document.body.appendChild(d); setTimeout(()=>d.remove(), ms); }
+function store(k,v){ try{ v===undefined? localStorage.removeItem(k) : localStorage.setItem(k,v); }catch(e){} }
+function load(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+
+async function rpc(fn, args){
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${fn}`, {
+    method:'POST', headers:{'apikey':SUPABASE_KEY,'Content-Type':'application/json'}, body: JSON.stringify(args||{})
+  });
+  const t = await r.text(); let j=null; try{ j = t? JSON.parse(t) : null; }catch(e){ j=t; }
+  if(!r.ok){
+    const m = (j && j.message) || t || ('Erro '+r.status);
+    if(String(m).includes('SESSAO_INVALIDA')){ logout(true); throw new Error('Sua sessão expirou. Entre novamente.'); }
+    throw new Error(m);
+  }
+  return j;
+}
+
+// ================= Sessão =================
+let S = { token: load('fer_token'), nome: load('fer_nome'), admin: load('fer_admin')==='1', view: 'colab' };
+let ME = null, ADM = null, F = null;
+
+function loginTab(t){
+  $('t-in').classList.toggle('on', t==='in'); $('t-pa').classList.toggle('on', t==='pa');
+  $('f-in').classList.toggle('hidden', t!=='in'); $('f-pa').classList.toggle('hidden', t!=='pa'); $('l-msg').innerHTML='';
+}
+function lmsg(t, cls='err'){ $('l-msg').innerHTML = `<div class="msg ${cls}">${esc(t)}</div>`; }
+async function doLogin(){
+  const email=$('l-email').value.trim(), senha=$('l-senha').value;
+  if(!email||!senha) return lmsg('Informe e-mail e senha.');
+  try{
+    const r = await rpc('fer_login',{p_email:email,p_senha:senha});
+    if(r.erro==='PRIMEIRO_ACESSO'){ loginTab('pa'); $('p-email').value=email; return lmsg('Este é seu primeiro acesso: use o código que o gestor te enviou para criar sua senha.','info'); }
+    if(r.erro) return lmsg(r.erro);
+    startSession(r);
+  }catch(e){ lmsg(e.message); }
+}
+async function doPrimeiro(){
+  const email=$('p-email').value.trim(), cod=$('p-cod').value.trim(), s1=$('p-senha').value, s2=$('p-senha2').value;
+  if(!email||!cod||!s1) return lmsg('Preencha todos os campos.');
+  if(s1!==s2) return lmsg('As senhas não conferem.');
+  try{
+    const r = await rpc('fer_primeiro_acesso',{p_email:email,p_codigo:cod,p_senha:s1});
+    if(r.erro) return lmsg(r.erro);
+    startSession(r);
+  }catch(e){ lmsg(e.message); }
+}
+function startSession(r){
+  S.token=r.token; S.nome=r.nome; S.admin=!!r.admin;
+  store('fer_token',S.token); store('fer_nome',S.nome); store('fer_admin',S.admin?'1':'0');
+  boot();
+}
+async function logout(silent){
+  const t=S.token; S={token:null,nome:null,admin:false,view:'colab'}; ME=null; ADM=null; F=null;
+  store('fer_token'); store('fer_nome'); store('fer_admin');
+  if(t && !silent){ try{ await rpc('fer_logout',{p_token:t}); }catch(e){} }
+  $('hdr').classList.add('hidden'); $('v-colab').classList.add('hidden'); $('v-admin').classList.add('hidden');
+  $('v-login').classList.remove('hidden'); $('l-senha').value='';
+}
+async function boot(){
+  if(!S.token) return;
+  $('v-login').classList.add('hidden'); $('hdr').classList.remove('hidden');
+  $('who').textContent = S.nome || '';
+  $('nav-admin').classList.toggle('hidden', !S.admin);
+  const v = (S.admin && location.hash==='#admin') ? 'admin' : 'colab';
+  await go(v);
+}
+async function go(v){
+  S.view=v; $('nav-colab').classList.toggle('on', v==='colab'); $('nav-admin').classList.toggle('on', v==='admin');
+  $('v-colab').classList.toggle('hidden', v!=='colab'); $('v-admin').classList.toggle('hidden', v!=='admin');
+  history.replaceState(null,'', v==='admin' ? '#admin' : location.pathname + location.search);
+  try{
+    if(v==='colab'){ await loadColab(); } else { await loadAdmin(); }
+  }catch(e){ toast(e.message, 5000); }
+}
+
+// ================= Modal =================
+function modal(html){ $('modal-root').innerHTML = `<div class="modal-bg" onclick="if(event.target===this)closeModal()"><div class="modal">${html}</div></div>`; }
+function closeModal(){ $('modal-root').innerHTML=''; }
+function modalSenha(){
+  modal(`<h3>Trocar senha</h3>
+    <label class="f">Senha atual<input type="password" id="m-a" style="width:100%"></label><br>
+    <label class="f">Nova senha (mín. 6)<input type="password" id="m-n" style="width:100%"></label><br>
+    <label class="f">Repita a nova senha<input type="password" id="m-n2" style="width:100%"></label>
+    <div id="m-msg"></div>
+    <div class="acts"><button class="btn ghost" onclick="closeModal()">Cancelar</button><button class="btn" onclick="trocarSenha()">Salvar</button></div>`);
+}
+async function trocarSenha(){
+  const a=$('m-a').value,n=$('m-n').value,n2=$('m-n2').value;
+  if(n!==n2){ $('m-msg').innerHTML='<div class="msg err">As senhas não conferem.</div>'; return; }
+  try{ const r=await rpc('fer_trocar_senha',{p_token:S.token,p_atual:a,p_nova:n});
+    if(r.erro){ $('m-msg').innerHTML=`<div class="msg err">${esc(r.erro)}</div>`; return; }
+    closeModal(); toast('Senha alterada.');
+  }catch(e){ $('m-msg').innerHTML=`<div class="msg err">${esc(e.message)}</div>`; }
+}
+
+// ================= Colaborador =================
+async function loadColab(){
+  ME = await rpc('fer_meus_dados',{p_token:S.token});
+  const sol = ME.solicitacao, cfg = ME.config;
+  F = { partes: sol? sol.partes : 1, d1: sol && sol.partes===2 ? sol.dias_p1 : Math.ceil(cfg.dias_total/2), ops:{'1-1':'','1-2':'','2-1':'','2-2':''}, obs: sol? (sol.observacao||'') : '', ativo:'1-1' };
+  if(sol) sol.opcoes.forEach(o => F.ops[`${o.periodo}-${o.opcao}`] = o.inicio);
+  renderColab();
+}
+function diasDe(per){ const t=ME.config.dias_total; return F.partes===1 ? t : (per===1 ? F.d1 : t-F.d1); }
+function bloqueiosDoDia(s){ return ME.bloqueios.filter(b => s>=b.inicio && s<=b.fim); }
+function avaliar(key){
+  const cfg=ME.config, [per,opc]=key.split('-').map(Number), ini=F.ops[key];
+  const out={fim:null, erros:[], avisos:[]};
+  if(!ini) return out;
+  const dias=diasDe(per); const fim=nd(dn(ini)+dias-1); out.fim=fim;
+  if(ini<=hoje()) out.erros.push('A data de início precisa ser futura.');
+  if(ini<`${cfg.ano}-01-01` || fim>`${cfg.ano}-12-31`) out.erros.push(`As férias precisam estar dentro de ${cfg.ano}.`);
+  if(cfg.bloquear_inicio_sex_sab && [5,6].includes(dow(ini))) out.erros.push('Não pode começar na sexta ou no sábado.');
+  ME.bloqueios.forEach(b=>{ if(overlap(ini,fim,b.inicio,b.fim)) out.erros.push(`Cai em data travada: ${b.motivo} (${brs(b.inicio)} a ${brs(b.fim)}).`); });
+  const outro = `${per}-${opc===1?2:1}`;
+  if(F.ops[outro] && F.ops[outro]===ini) out.erros.push('As duas opções do mesmo período precisam ser diferentes.');
+  if(F.partes===2){
+    const op = per===1?2:1;
+    [1,2].forEach(o=>{ const k=`${op}-${o}`; const i2=F.ops[k]; if(!i2) return; const f2=nd(dn(i2)+diasDe(op)-1);
+      if(overlap(ini,fim,i2,f2)) out.erros.push(`Sobrepõe a opção ${o} do ${op}º período.`); });
+  }
+  if([0,6].includes(dow(ini))) out.avisos.push('Começa em fim de semana.');
+  return out;
+}
+function setPartes(p){ F.partes=p; if(p===1){ F.ops['2-1']=''; F.ops['2-2']=''; } if(F.ativo.startsWith('2') && p===1) F.ativo='1-1'; renderColab(); }
+function setD1(v){ F.d1=Number(v); renderColab(); }
+function setOp(k,v){ F.ops[k]=v; F.ativo=k; renderColab(); }
+function setAtivo(k){ F.ativo=k; renderColab(); }
+function clickDia(s){
+  if(travado()) return;
+  if(s<=hoje()) return;
+  if(bloqueiosDoDia(s).length){ toast('Data travada: '+bloqueiosDoDia(s).map(b=>b.motivo).join(', ')); return; }
+  F.ops[F.ativo]=s;
+  const ordem = F.partes===1 ? ['1-1','1-2'] : ['1-1','1-2','2-1','2-2'];
+  const prox = ordem.find(k=>!F.ops[k]); if(prox) F.ativo=prox;
+  renderColab();
+}
+function travado(){ const s=ME.solicitacao; return s && s.opcoes.some(o=>o.aprovada); }
+function encerrado(){ const c=ME.config; return !ME.eu.admin && (!c.aberto || (c.prazo && hoje()>c.prazo)); }
+
+function renderColab(){
+  const cfg=ME.config, sol=ME.solicitacao, lock=travado()||encerrado();
+  const tMin = cfg.dias_total - cfg.min_parte;
+  let h='';
+  if(cfg.aviso) h+=`<div class="msg info">${esc(cfg.aviso)}</div>`;
+  // status
+  if(sol){
+    h+=`<div class="card"><div class="req-h"><h2 style="margin:0">Sua solicitação ${cfg.ano}</h2><span class="badge b-${sol.status}">${STATUS[sol.status]}</span>
+        <span class="muted small">Atualizada em ${fmtDT(sol.updated_at)}</span></div>`;
+    if(sol.status==='ajuste') h+=`<div class="msg err"><b>O gestor pediu ajuste:</b> ${esc(sol.comentario_admin||'revise suas datas e envie novamente.')}</div>`;
+    const ap = sol.opcoes.filter(o=>o.aprovada);
+    if(ap.length){ h+=`<div class="msg ok"><b>Período(s) aprovado(s):</b> ${ap.map(o=>`${o.periodo}º período: ${br(o.inicio)} a ${br(o.fim)}`).join(' · ')}</div>`; }
+    if(travado()) h+=`<p class="small muted">Como já há período aprovado, a solicitação está travada. Para mudar, fale com o gestor.</p>`;
+    h+=`</div>`;
+  }
+  if(encerrado()) h+=`<div class="msg warn">O prazo para enviar ou alterar solicitações está encerrado.</div>`;
+  // regras
+  h+=`<div class="card"><h2>Como funciona</h2><ul class="rules small">
+    <li>Você tem <b>${cfg.dias_total} dias corridos</b> de férias para tirar em <b>${cfg.ano}</b>.</li>
+    <li>Pode tirar tudo de uma vez ou dividir em <b>2 períodos</b>, com pelo menos <b>${cfg.min_parte} dias</b> no menor.</li>
+    <li>Para cada período, informe <b>2 opções</b> de data. O gestor escolhe uma de cada.</li>
+    <li>As datas em <span style="background:var(--blk);padding:0 4px;border-radius:3px">vermelho</span> no calendário estão travadas (eventos e períodos restritos).</li>
+    ${cfg.bloquear_inicio_sex_sab?'<li>As férias não podem começar na sexta ou no sábado.</li>':''}
+    ${cfg.prazo?`<li>Prazo para envio: <b>${br(cfg.prazo)}</b>.</li>`:''}
+  </ul></div>`;
+  // formulário
+  h+=`<div class="card"><h2>${sol?'Editar':'Nova'} solicitação</h2>
+    <div class="choice" style="margin-bottom:12px">
+      <label class="${F.partes===1?'on':''}"><input type="radio" name="partes" ${F.partes===1?'checked':''} ${lock?'disabled':''} onchange="setPartes(1)"> 1 período de ${cfg.dias_total} dias</label>
+      <label class="${F.partes===2?'on':''}"><input type="radio" name="partes" ${F.partes===2?'checked':''} ${lock?'disabled':''} onchange="setPartes(2)"> Dividir em 2 períodos</label>
+      ${F.partes===2?`<label class="f" style="border:0;padding:0 6px;background:none">Dias no 1º período
+        <select ${lock?'disabled':''} onchange="setD1(this.value)">${Array.from({length:tMin-cfg.min_parte+1},(_,i)=>cfg.min_parte+i).map(d=>`<option value="${d}" ${d===F.d1?'selected':''}>${d} + ${cfg.dias_total-d} dias</option>`).join('')}</select></label>`:''}
+    </div>
+    <p class="small muted">Clique numa opção abaixo e depois no dia de início no calendário (ou digite a data). O fim é calculado automaticamente.</p>
+    <div class="periods">`;
+  for(let p=1;p<=F.partes;p++){
+    h+=`<div class="period"><h3>${F.partes===1?'Período único':p+'º período'} · ${diasDe(p)} dias</h3>`;
+    for(let o=1;o<=2;o++){
+      const k=`${p}-${o}`, a=avaliar(k), cor=`var(--p${p}${o})`;
+      h+=`<div class="opt ${F.ativo===k&&!lock?'active':''}" onclick="${lock?'':`setAtivo('${k}')`}">
+        <div><span class="tag" style="background:${cor}"></span><b>Opção ${o}</b></div>
+        <div class="row" style="margin-top:6px"><label class="f">Início<input type="date" value="${F.ops[k]}" min="${cfg.ano}-01-01" max="${cfg.ano}-12-31" ${lock?'disabled':''} onclick="event.stopPropagation()" onchange="setOp('${k}',this.value)"></label>
+        ${a.fim?`<div class="small">até <b>${br(a.fim)}</b> (${DSEM[dow(a.fim)]})<br><span class="muted">volta ${br(nd(dn(a.fim)+1))} (${DSEM[dow(nd(dn(a.fim)+1))]})</span></div>`:''}</div>
+        <div class="res">${a.erros.map(e=>`<div class="e">✕ ${esc(e)}</div>`).join('')}${a.avisos.map(e=>`<div class="w">• ${esc(e)}</div>`).join('')}${a.fim&&!a.erros.length?'<div class="g">✓ Datas válidas</div>':''}</div>
+      </div>`;
+    }
+    h+=`</div>`;
+  }
+  h+=`</div>
+    <label class="f" style="margin-top:12px">Observação para o gestor (opcional)<textarea id="obs" ${lock?'disabled':''} oninput="F.obs=this.value">${esc(F.obs)}</textarea></label>
+    <div id="c-msg"></div>
+    <div class="row" style="margin-top:10px"><button class="btn" ${lock?'disabled':''} onclick="enviar()">${sol?'Atualizar solicitação':'Enviar solicitação'}</button>
+    ${sol&&!lock?'<span class="small muted">Ao atualizar, a solicitação volta para "Aguardando aprovação".</span>':''}</div>
+  </div>`;
+  // calendário
+  h+=`<div class="card"><h2>Calendário ${cfg.ano}</h2>
+    <div class="legend"><span><i style="background:var(--p11)"></i>${F.partes===1?'':'1º período · '}Opção 1</span><span><i style="background:var(--p12)"></i>${F.partes===1?'':'1º período · '}Opção 2</span>
+    ${F.partes===2?'<span><i style="background:var(--p21)"></i>2º período · Opção 1</span><span><i style="background:var(--p22)"></i>2º período · Opção 2</span>':''}
+    <span><i style="background:var(--blk)"></i>Data travada</span>${ME.eu.executivo?'<span><i style="background:repeating-linear-gradient(45deg,var(--verm-suave) 0 3px,#fff 3px 6px)"></i>Travada para executivos</span>':''}</div>
+    <div class="cal">${calendario()}</div></div>`;
+  $('v-colab').innerHTML=h;
+}
+function calendario(){
+  const ano=ME.config.ano, hj=hoje(); let h='';
+  const ranges=[]; for(const k in F.ops){ if(!F.ops[k]) continue; const [p]=k.split('-').map(Number); if(p>F.partes) continue; ranges.push({k,ini:F.ops[k],fim:nd(dn(F.ops[k])+diasDe(p)-1)}); }
+  for(let m=0;m<12;m++){
+    const first=`${ano}-${String(m+1).padStart(2,'0')}-01`; const nDias=new Date(Date.UTC(ano,m+1,0)).getUTCDate();
+    h+=`<div class="mon"><h4>${MESES[m]}</h4><div class="mgrid">${['D','S','T','Q','Q','S','S'].map(x=>`<div class="h">${x}</div>`).join('')}`;
+    for(let i=0;i<dow(first);i++) h+='<div></div>';
+    for(let d=1;d<=nDias;d++){
+      const s=`${ano}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; const w=dow(s);
+      const bl=bloqueiosDoDia(s); const hit=ranges.filter(r=>s>=r.ini&&s<=r.fim);
+      let cls='d'; let tip='';
+      if(w===0||w===6) cls+=' we';
+      if(s<=hj) cls+=' past';
+      if(bl.length){ cls+= bl.every(b=>b.publico==='executivos')?' blkx':' blk'; tip=bl.map(b=>`${b.motivo} (${TIPOS[b.tipo]})`).join(' | '); }
+      else if(hit.length){ cls+=' o'+hit[0].k.replace('-',''); if(hit.length>1) cls+=' multi'; tip=hit.map(r=>r.k.replace('-','º período · opção ')).join(' | '); }
+      h+=`<div class="${cls}" title="${esc(tip)}" onclick="clickDia('${s}')">${d}</div>`;
+    }
+    h+=`</div></div>`;
+  }
+  return h;
+}
+async function enviar(){
+  const keys = F.partes===1 ? ['1-1','1-2'] : ['1-1','1-2','2-1','2-2'];
+  const faltando = keys.filter(k=>!F.ops[k]);
+  if(faltando.length){ $('c-msg').innerHTML=`<div class="msg err">Preencha as 2 opções de cada período.</div>`; return; }
+  const errs = keys.flatMap(k=>avaliar(k).erros.map(e=>`${k.replace('-','º período, opção ')}: ${e}`));
+  if(errs.length){ $('c-msg').innerHTML=`<div class="msg err">${errs.map(esc).join('<br>')}</div>`; return; }
+  const p = { partes:F.partes, dias_p1: F.partes===2? F.d1 : null, observacao: F.obs,
+    opcoes: keys.map(k=>{ const [pe,op]=k.split('-').map(Number); return {periodo:pe, opcao:op, inicio:F.ops[k]}; }) };
+  try{ await rpc('fer_salvar_solicitacao',{p_token:S.token,p}); toast('Solicitação enviada! O gestor vai avaliar.'); await loadColab(); window.scrollTo(0,0); }
+  catch(e){ $('c-msg').innerHTML=`<div class="msg err">${esc(e.message)}</div>`; }
+}
+
+// ================= Administrador =================
+let A = { tab:'mapa', zoom:4, soAprov:false, filtro:'todos', editBlq:null, editCol:null };
+async function loadAdmin(){ ADM = await rpc('fer_admin_dados',{p_token:S.token}); prepAdmin(); renderAdmin(); }
+function prepAdmin(){
+  const byId={}; ADM.colaboradores.forEach(c=>byId[c.id]=c);
+  ADM.byId=byId;
+  ADM.solByCol={}; ADM.solicitacoes.forEach(s=>ADM.solByCol[s.colaborador_id]=s);
+  // opções "vivas": descartadas quando outra opção do mesmo período foi aprovada
+  ADM.ops=[];
+  ADM.solicitacoes.forEach(s=>{
+    const col=byId[s.colaborador_id]; if(!col) return;
+    s.opcoes.forEach(o=>{
+      const aprPer = s.opcoes.some(x=>x.periodo===o.periodo&&x.aprovada);
+      ADM.ops.push({...o, sol:s, col, desc: aprPer && !o.aprovada});
+    });
+  });
+  // conflitos entre pessoas
+  ADM.ops.forEach(o=>{
+    o.conf=[];
+    if(o.desc) return;
+    ADM.ops.forEach(x=>{
+      if(x.col.id===o.col.id || x.desc) return;
+      const d=overlap(o.inicio,o.fim,x.inicio,x.fim); if(d) o.conf.push({x,dias:d});
+    });
+    o.blq = ADM.bloqueios.filter(b=>(b.publico==='todos'||o.col.executivo) && overlap(o.inicio,o.fim,b.inicio,b.fim));
+  });
+}
+function setTab(t){ A.tab=t; renderAdmin(); }
+function renderAdmin(){
+  const cfg=ADM.config; const ativos=ADM.colaboradores.filter(c=>c.ativo);
+  const sols=ADM.solicitacoes.filter(s=>ADM.byId[s.colaborador_id]?.ativo);
+  const nConf = ADM.ops.filter(o=>o.conf.length).length;
+  const nConfAp = ADM.ops.filter(o=>o.aprovada && o.conf.some(c=>c.x.aprovada)).length;
+  let h=`<div class="kpis">
+    <div class="kpi"><span>Pessoas na equipe</span><b>${ativos.length}</b></div>
+    <div class="kpi"><span>Enviaram solicitação</span><b>${sols.length}</b></div>
+    <div class="kpi"><span>Ainda não enviaram</span><b>${ativos.length-sols.length}</b></div>
+    <div class="kpi"><span>Aguardando aprovação</span><b>${sols.filter(s=>s.status==='pendente').length}</b></div>
+    <div class="kpi"><span>Aprovadas</span><b>${sols.filter(s=>s.status==='aprovada').length}</b></div>
+    <div class="kpi ${nConf?'alert':''}"><span>Opções com sobreposição</span><b>${nConf}</b>${nConfAp?`<span style="color:var(--vermelho);text-transform:none">${nConfAp} entre aprovadas</span>`:''}</div>
+  </div>
+  <div class="subnav">${[['mapa','Mapa do ano'],['sol','Solicitações'],['blq','Datas travadas'],['eq','Equipe'],['cfg','Configurações']].map(([k,t])=>`<button class="${A.tab===k?'on':''}" onclick="setTab('${k}')">${t}</button>`).join('')}
+    <span style="flex:1"></span><button onclick="loadAdmin()">↻ Atualizar</button><button onclick="exportCSV()">⬇ Exportar CSV</button></div>`;
+  if(A.tab==='mapa') h+=tabMapa();
+  if(A.tab==='sol') h+=tabSol();
+  if(A.tab==='blq') h+=tabBlq();
+  if(A.tab==='eq') h+=tabEq();
+  if(A.tab==='cfg') h+=tabCfg();
+  $('v-admin').innerHTML=h;
+  if(A.tab==='mapa'){ const w=$('tlw'); if(w && !A.scrolled){ A.scrolled=true; } }
+}
+// ---- Mapa (linha do tempo) ----
+function tabMapa(){
+  const ano=ADM.config.ano, Z=A.zoom, d0=dn(`${ano}-01-01`), nD=dn(`${ano}-12-31`)-d0+1, W=nD*Z;
+  const pos=s=>(dn(s)-d0)*Z;
+  const blqHtml=exec=>{ let blq=''; ADM.bloqueios.filter(b=>b.publico==='todos'||exec).forEach(b=>{ blq+=`<div class="tl-blk ${b.publico==='executivos'?'x':''}" style="left:${Math.max(0,pos(b.inicio))}px;width:${(dn(b.fim)-dn(b.inicio)+1)*Z}px" title="${esc(b.motivo)} · ${br(b.inicio)} a ${br(b.fim)} · ${b.publico==='executivos'?'só executivos':'todos'}"></div>`; }); return blq; };
+  let mh=''; for(let m=0;m<12;m++){ const s=`${ano}-${String(m+1).padStart(2,'0')}-01`; mh+=`<div class="tl-m" style="left:${pos(s)}px">${Z>=4?MESES[m]:MESES[m].slice(0,3)}</div>`; }
+  // ocupação
+  const occ=new Array(nD).fill(0), occA=new Array(nD).fill(0);
+  const vivos=ADM.ops.filter(o=>!o.desc && o.col.ativo);
+  const pessoasDia=new Array(nD).fill(null).map(()=>new Set()), aprDia=new Array(nD).fill(null).map(()=>new Set());
+  vivos.forEach(o=>{ for(let n=dn(o.inicio);n<=dn(o.fim);n++){ const i=n-d0; if(i<0||i>=nD) continue; pessoasDia[i].add(o.col.id); if(o.aprovada) aprDia[i].add(o.col.id);} });
+  let oc=''; for(let i=0;i<nD;i++){ const p=pessoasDia[i].size, a=aprDia[i].size; if(!p) continue;
+    const bg = a>=2 ? '#BB243E' : p>=2 ? '#F5DCE1' : a ? '#D4EFF1' : '#EAE9E8';
+    oc+=`<div class="tl-occ-c" style="left:${i*Z}px;width:${Z}px;background:${bg}" title="${br(nd(d0+i))}: ${p} pessoa(s) com opção, ${a} aprovada(s)"></div>`; }
+  let rows='';
+  const lista = ADM.colaboradores.filter(c=>c.ativo).sort((a,b)=>a.nome.localeCompare(b.nome));
+  lista.forEach(c=>{
+    const s=ADM.solByCol[c.id];
+    let bars='';
+    if(s) ADM.ops.filter(o=>o.sol.id===s.id).forEach(o=>{
+      if(A.soAprov && !o.aprovada) return;
+      const cls=`tl-bar l${o.opcao} p${o.periodo}${o.opcao} ${o.aprovada?'apr':''} ${o.desc?'desc':''} ${o.conf.length&&!o.desc?'conf':''}`;
+      const tip=`${c.nome} · ${s.partes===1?'Período único':o.periodo+'º período'} · Opção ${o.opcao}${o.aprovada?' (APROVADA)':''}\n${br(o.inicio)} a ${br(o.fim)}`+(o.conf.length?`\nSobrepõe: `+o.conf.map(k=>`${k.x.col.nome} (${k.dias}d${k.x.aprovada?', aprovada':''})`).join(', '):'');
+      bars+=`<div class="${cls}" style="left:${pos(o.inicio)}px;width:${(dn(o.fim)-dn(o.inicio)+1)*Z}px" title="${esc(tip)}">${Z>=4?`P${o.periodo}·O${o.opcao}`:''}</div>`;
+    });
+    const st = s? `<span class="badge b-${s.status}" style="margin-left:4px">${s.status==='pendente'?'pend.':s.status==='aprovada'?'aprov.':'ajuste'}</span>` : '<span class="badge b-nao" style="margin-left:4px">não enviou</span>';
+    rows+=`<div class="tl-row"><div class="tl-name" title="${esc(c.nome)}">${esc(c.nome)}${c.executivo?' <span class="badge b-exec">exec</span>':''}${st}</div><div class="tl-track" style="width:${W}px">${blqHtml(c.executivo)}${bars}</div></div>`;
+  });
+  return `<div class="card"><div class="row" style="justify-content:space-between;margin-bottom:10px"><h2 style="margin:0">Mapa de ${ano}</h2>
+    <div class="row"><label class="small"><input type="checkbox" ${A.soAprov?'checked':''} onchange="A.soAprov=this.checked;renderAdmin()"> Mostrar só aprovadas</label>
+    <label class="f">Zoom<select onchange="A.zoom=Number(this.value);renderAdmin()">${[[3,'Ano'],[4,'Normal'],[7,'Detalhe'],[12,'Máximo']].map(([v,t])=>`<option value="${v}" ${A.zoom===v?'selected':''}>${t}</option>`).join('')}</select></label></div></div>
+    <div class="legend"><span><i style="background:var(--chumbo)"></i>Opção 1 (linha de cima)</span><span><i style="background:var(--prata)"></i>Opção 2 (linha de baixo)</span><span><i style="background:var(--teal)"></i>Aprovada</span>
+    <span><i style="background:#fff;box-shadow:0 0 0 2px var(--vermelho)"></i>Sobrepõe outra pessoa</span><span><i style="background:rgba(187,36,62,.25)"></i>Travada (todos)</span><span><i style="background:repeating-linear-gradient(45deg,rgba(187,36,62,.3) 0 3px,#fff 3px 6px)"></i>Travada (só executivos)</span><span>Rótulo P1/P2 = período</span></div>
+    <div class="legend"><b style="color:var(--chumbo)">Linha "Ocupação":</b><span><i style="background:#EAE9E8"></i>1 pessoa com opção</span><span><i style="background:#D4EFF1"></i>1 aprovada</span><span><i style="background:#F5DCE1"></i>2+ pessoas com opção</span><span><i style="background:#BB243E"></i>2+ aprovadas no mesmo dia</span></div>
+    <div class="tl-wrap" id="tlw"><div class="tl" style="width:${W+190}px">
+      <div class="tl-row tl-head"><div class="tl-name"><b>Pessoa</b></div><div class="tl-track" style="width:${W}px">${mh}</div></div>
+      <div class="tl-row tl-occ"><div class="tl-name"><b>Ocupação</b></div><div class="tl-track" style="width:${W}px">${oc}</div></div>
+      ${rows || `<div class="tl-row"><div class="tl-name muted">Cadastre a equipe na aba Equipe</div></div>`}
+    </div></div>
+    <p class="small muted">Passe o mouse sobre as barras para ver as datas e com quem cada opção se sobrepõe. Opções esmaecidas foram descartadas porque a outra opção do mesmo período foi aprovada.</p></div>`;
+}
+// ---- Solicitações ----
+function tabSol(){
+  const lista=ADM.colaboradores.filter(c=>c.ativo).sort((a,b)=>a.nome.localeCompare(b.nome));
+  const f=A.filtro;
+  let h=`<div class="row" style="margin-bottom:12px"><label class="f">Filtrar<select onchange="A.filtro=this.value;renderAdmin()">
+    ${[['todos','Todas'],['pendente','Aguardando aprovação'],['aprovada','Aprovadas'],['ajuste','Ajuste solicitado'],['conf','Com sobreposição'],['nao','Não enviaram']].map(([v,t])=>`<option value="${v}" ${f===v?'selected':''}>${t}</option>`).join('')}</select></label></div>`;
+  let n=0;
+  lista.forEach(c=>{
+    const s=ADM.solByCol[c.id];
+    if(f==='nao' && s) return; if(['pendente','aprovada','ajuste'].includes(f) && (!s||s.status!==f)) return;
+    if(f==='conf' && (!s || !ADM.ops.some(o=>o.sol.id===s.id && o.conf.length))) return;
+    n++;
+    if(!s){ h+=`<div class="req"><div class="req-h"><b>${esc(c.nome)}</b>${c.executivo?'<span class="badge b-exec">executivo</span>':''}<span class="badge b-nao">Não enviou</span><span class="muted small">${esc(c.email)}</span></div></div>`; return; }
+    h+=`<div class="req st-${s.status}"><div class="req-h"><b>${esc(c.nome)}</b>${c.area?`<span class="muted small">${esc(c.area)}</span>`:''}${c.executivo?'<span class="badge b-exec">executivo</span>':''}
+      <span class="badge b-${s.status}">${STATUS[s.status]}</span><span class="muted small">${s.partes===1?`1 período de ${s.dias_p1} dias`:`2 períodos: ${s.dias_p1} + ${s.dias_p2} dias`} · enviada ${fmtDT(s.created_at)}${s.updated_at!==s.created_at?` · atualizada ${fmtDT(s.updated_at)}`:''}</span></div>`;
+    if(s.observacao) h+=`<div class="msg info" style="margin:6px 0">💬 ${esc(s.observacao)}</div>`;
+    if(s.status==='ajuste' && s.comentario_admin) h+=`<div class="msg err" style="margin:6px 0">Ajuste pedido: ${esc(s.comentario_admin)}</div>`;
+    h+=`<table class="opt-tbl"><tr><th>Período</th><th>Opção</th><th>Datas</th><th>Dias</th><th>Sobreposições / alertas</th><th></th></tr>`;
+    ADM.ops.filter(o=>o.sol.id===s.id).forEach(o=>{
+      const dias=dn(o.fim)-dn(o.inicio)+1;
+      const cf = o.desc ? '<span class="muted">descartada</span>' :
+        (o.conf.length? `<div class="conf-list">${o.conf.map(k=>`<div class="${k.x.aprovada?'x':'y'}">${k.x.aprovada?'⛔':'⚠'} ${esc(k.x.col.nome)}: ${k.dias} dia(s) em comum (${k.x.sol.partes===1?'único':k.x.periodo+'º per.'} op.${k.x.opcao}${k.x.aprovada?', APROVADA':''})</div>`).join('')}</div>` : '<span style="color:var(--ok)">✓ sem sobreposição</span>')
+        + (o.blq&&o.blq.length? o.blq.map(b=>`<div class="conf-list x">⛔ Cai em data travada: ${esc(b.motivo)}</div>`).join(''):'');
+      h+=`<tr class="${o.aprovada?'apr':''} ${o.desc?'desc':''}"><td>${s.partes===1?'Único':o.periodo+'º'}</td><td>${o.opcao}</td>
+        <td>${br(o.inicio)} a ${br(o.fim)}<div class="small muted">${DSEM[dow(o.inicio)]} a ${DSEM[dow(o.fim)]}</div></td><td>${dias}</td><td>${cf}</td>
+        <td style="white-space:nowrap">${o.aprovada?`<span class="badge b-aprovada">✓ Aprovada</span> <button class="btn ghost sm" onclick="aprovar('${s.id}',${o.periodo},null)">desfazer</button>`:`<button class="btn ok sm" onclick="aprovar('${s.id}',${o.periodo},${o.opcao})">Aprovar esta</button>`}</td></tr>`;
+    });
+    h+=`</table><div class="row" style="margin-top:8px"><button class="btn danger sm" onclick="modalDevolver('${s.id}','${esc(c.nome)}')">Devolver para ajuste</button><button class="btn ghost sm" onclick="excluirSol('${s.id}','${esc(c.nome)}')">Excluir solicitação</button></div></div>`;
+  });
+  if(!n) h+=`<div class="card muted">Nada para mostrar com esse filtro.</div>`;
+  return h;
+}
+async function aprovar(sol,per,opc){ try{ await rpc('fer_admin_aprovar',{p_token:S.token,p_sol:sol,p_periodo:per,p_opcao:opc}); await loadAdmin(); toast(opc?'Opção aprovada.':'Aprovação desfeita.'); }catch(e){ toast(e.message,5000); } }
+function modalDevolver(id,nome){
+  modal(`<h3>Devolver para ajuste · ${nome}</h3><p class="small muted">As aprovações desta solicitação serão desfeitas e a pessoa poderá editar as datas.</p>
+    <label class="f">Comentário para o colaborador<textarea id="m-com" placeholder="Ex.: o período de julho conflita com o evento X, por favor escolha outra data."></textarea></label>
+    <div class="acts"><button class="btn ghost" onclick="closeModal()">Cancelar</button><button class="btn" onclick="devolver('${id}')">Devolver</button></div>`);
+}
+async function devolver(id){ try{ await rpc('fer_admin_devolver',{p_token:S.token,p_sol:id,p_comentario:$('m-com').value}); closeModal(); await loadAdmin(); toast('Solicitação devolvida para ajuste.'); }catch(e){ toast(e.message,5000); } }
+function excluirSol(id,nome){
+  modal(`<h3>Excluir solicitação</h3><p>Excluir a solicitação de <b>${nome}</b>? A pessoa precisará enviar de novo.</p>
+    <div class="acts"><button class="btn ghost" onclick="closeModal()">Cancelar</button><button class="btn danger" onclick="doExcluirSol('${id}')">Excluir</button></div>`);
+}
+async function doExcluirSol(id){ try{ await rpc('fer_admin_excluir_solicitacao',{p_token:S.token,p_sol:id}); closeModal(); await loadAdmin(); toast('Solicitação excluída.'); }catch(e){ toast(e.message,5000); } }
+// ---- Datas travadas ----
+function tabBlq(){
+  const e=A.editBlq||{}; const ano=ADM.config.ano;
+  let h=`<div class="card"><h2>${e.id?'Editar':'Travar'} datas</h2>
+    <div class="row">
+      <label class="f">Início<input type="date" id="b-ini" value="${e.inicio||''}"></label>
+      <label class="f">Fim<input type="date" id="b-fim" value="${e.fim||''}"></label>
+      <label class="f" style="flex:1;min-width:220px">Motivo / evento<input type="text" id="b-mot" value="${esc(e.motivo||'')}" placeholder="Ex.: Artmed Experience" style="width:100%"></label>
+      <label class="f">Tipo<select id="b-tipo">${Object.entries(TIPOS).map(([k,t])=>`<option value="${k}" ${(e.tipo||'grande_evento')===k?'selected':''}>${t}</option>`).join('')}</select></label>
+      <label class="f">Vale para<select id="b-pub"><option value="todos" ${e.publico!=='executivos'?'selected':''}>Toda a equipe</option><option value="executivos" ${e.publico==='executivos'?'selected':''}>Só executivos</option></select></label>
+      <button class="btn" onclick="salvarBlq()">${e.id?'Salvar':'Travar'}</button>${e.id?'<button class="btn ghost" onclick="A.editBlq=null;renderAdmin()">Cancelar</button>':''}
+    </div>
+    <p class="small muted">Atalho: <a href="#" onclick="event.preventDefault();preBlq('${ano}-01-01','${ano}-01-31','Janeiro — período restrito para executivos','periodo_restrito','executivos')">travar janeiro para executivos</a></p>
+    <div id="b-msg"></div></div>`;
+  h+=`<div class="card"><h2>Datas travadas (${ADM.bloqueios.length})</h2>`;
+  if(!ADM.bloqueios.length) h+=`<p class="muted">Nenhuma data travada ainda.</p>`;
+  else{
+    h+=`<table><tr><th>Período</th><th>Motivo</th><th>Tipo</th><th>Vale para</th><th>Solicitações afetadas</th><th></th></tr>`;
+    ADM.bloqueios.forEach(b=>{
+      const af=ADM.ops.filter(o=>!o.desc && (b.publico==='todos'||o.col.executivo) && overlap(o.inicio,o.fim,b.inicio,b.fim));
+      h+=`<tr><td>${br(b.inicio)} a ${br(b.fim)}<div class="small muted">${dn(b.fim)-dn(b.inicio)+1} dia(s)</div></td><td>${esc(b.motivo)}</td><td>${TIPOS[b.tipo]}</td><td>${b.publico==='executivos'?'<span class="badge b-exec">Só executivos</span>':'Toda a equipe'}</td>
+        <td>${af.length?`<span style="color:var(--err)">${af.map(o=>`${esc(o.col.nome)} (P${o.periodo} op.${o.opcao}${o.aprovada?', aprovada':''})`).join('<br>')}</span>`:'<span class="muted">—</span>'}</td>
+        <td style="white-space:nowrap"><button class="btn ghost sm" onclick='A.editBlq=${JSON.stringify(b).replace(/'/g,"&#39;")};renderAdmin();window.scrollTo(0,0)'>Editar</button> <button class="btn danger sm" onclick="excluirBlq('${b.id}')">Excluir</button></td></tr>`;
+    });
+    h+=`</table><p class="small muted">"Solicitações afetadas" mostra pedidos enviados antes da trava que caem nessas datas. Devolva-os para ajuste, se for o caso.</p>`;
+  }
+  return h+`</div>`;
+}
+function preBlq(i,f,m,t,p){ A.editBlq={inicio:i,fim:f,motivo:m,tipo:t,publico:p}; renderAdmin(); }
+async function salvarBlq(){
+  const p={id:A.editBlq?.id||null,inicio:$('b-ini').value,fim:$('b-fim').value,motivo:$('b-mot').value,tipo:$('b-tipo').value,publico:$('b-pub').value};
+  try{ await rpc('fer_admin_salvar_bloqueio',{p_token:S.token,p}); A.editBlq=null; await loadAdmin(); toast('Datas travadas salvas.'); }
+  catch(e){ $('b-msg').innerHTML=`<div class="msg err">${esc(e.message)}</div>`; }
+}
+async function excluirBlq(id){ try{ await rpc('fer_admin_excluir_bloqueio',{p_token:S.token,p_id:id}); await loadAdmin(); toast('Trava removida.'); }catch(e){ toast(e.message,5000); } }
+// ---- Equipe ----
+function linkSistema(){ return location.origin + location.pathname; }
+function tabEq(){
+  const e=A.editCol||{};
+  let h=`<div class="card"><h2>${e.id?'Editar pessoa':'Adicionar pessoa'}</h2><div class="row">
+    <label class="f" style="min-width:200px;flex:1">Nome<input type="text" id="e-nome" value="${esc(e.nome||'')}" style="width:100%"></label>
+    <label class="f" style="min-width:220px;flex:1">E-mail<input type="email" id="e-email" value="${esc(e.email||'')}" style="width:100%"></label>
+    <label class="f">Área / cargo<input type="text" id="e-area" value="${esc(e.area||'')}"></label>
+    <label class="small"><input type="checkbox" id="e-exec" ${e.executivo?'checked':''}> Executivo</label>
+    <label class="small"><input type="checkbox" id="e-adm" ${e.admin?'checked':''}> Administrador</label>
+    <button class="btn" onclick="salvarCol()">${e.id?'Salvar':'Adicionar'}</button>${e.id?'<button class="btn ghost" onclick="A.editCol=null;renderAdmin()">Cancelar</button>':''}
+  </div><p class="small muted">Ao adicionar, o sistema gera um código de 6 dígitos. A pessoa usa esse código em "Primeiro acesso" para criar a própria senha. Marque "Executivo" para aplicar as travas exclusivas de executivos.</p><div id="e-msg"></div></div>`;
+  h+=`<div class="card"><h2>Equipe (${ADM.colaboradores.filter(c=>c.ativo).length} ativos)</h2><table><tr><th>Nome</th><th>E-mail</th><th>Área</th><th>Perfil</th><th>Acesso</th><th>Solicitação</th><th></th></tr>`;
+  ADM.colaboradores.forEach(c=>{
+    const s=ADM.solByCol[c.id];
+    h+=`<tr style="${c.ativo?'':'opacity:.5'}"><td>${esc(c.nome)}${c.ativo?'':' <span class="badge b-nao">inativo</span>'}</td><td>${esc(c.email)}</td><td>${esc(c.area||'')}</td>
+      <td>${c.executivo?'<span class="badge b-exec">executivo</span> ':''}${c.admin?'<span class="badge b-adm">admin</span>':''}</td>
+      <td>${c.tem_senha?'<span style="color:var(--ok)">✓ senha criada</span>':(c.codigo_acesso?`código <span class="code" style="font-size:13px">${c.codigo_acesso}</span> <button class="btn ghost sm" onclick="mostrarConvite('${c.id}')">convite</button>`:'—')}</td>
+      <td>${s?`<span class="badge b-${s.status}">${STATUS[s.status]}</span>`:'<span class="badge b-nao">não enviou</span>'}</td>
+      <td style="white-space:nowrap"><button class="btn ghost sm" onclick="editCol('${c.id}')">Editar</button>
+        ${c.id!==ADM.eu.id?`<button class="btn ghost sm" onclick="novoCodigo('${c.id}')">Novo código</button>`:''}
+        ${c.id!==ADM.eu.id?(c.ativo?`<button class="btn danger sm" onclick="excluirCol('${c.id}')">Remover</button>`:`<button class="btn ghost sm" onclick="reativar('${c.id}')">Reativar</button>`):''}</td></tr>`;
+  });
+  return h+`</table></div>`;
+}
+function editCol(id){ A.editCol={...ADM.byId[id]}; renderAdmin(); window.scrollTo(0,0); }
+async function salvarCol(){
+  const e=A.editCol||{};
+  const p={id:e.id||null,nome:$('e-nome').value,email:$('e-email').value,area:$('e-area').value,executivo:$('e-exec').checked,admin:$('e-adm').checked,ativo:e.id?e.ativo:true};
+  try{ const r=await rpc('fer_admin_salvar_colaborador',{p_token:S.token,p}); A.editCol=null; await loadAdmin();
+    if(!e.id && r.codigo_acesso) mostrarConvite(r.id); else toast('Dados salvos.'); }
+  catch(err){ $('e-msg').innerHTML=`<div class="msg err">${esc(err.message)}</div>`; }
+}
+function textoConvite(c){ return `Olá, ${c.nome.split(' ')[0]}! Para solicitar suas férias de ${ADM.config.ano}, acesse ${linkSistema()} , clique em "Primeiro acesso" e use seu e-mail (${c.email}) com o código ${c.codigo_acesso} para criar sua senha.`; }
+function mostrarConvite(id){
+  const c=ADM.byId[id]; if(!c||!c.codigo_acesso) return;
+  modal(`<h3>Código de acesso · ${esc(c.nome)}</h3><p>Código: <span class="code">${c.codigo_acesso}</span></p>
+    <label class="f">Mensagem pronta para enviar<textarea id="m-conv" style="min-height:90px">${esc(textoConvite(c))}</textarea></label>
+    <div class="acts"><button class="btn ghost" onclick="closeModal()">Fechar</button><button class="btn" onclick="copiar('m-conv')">Copiar mensagem</button></div>`);
+}
+function copiar(id){ const t=$(id); t.select(); try{ navigator.clipboard.writeText(t.value).then(()=>toast('Copiado.'),()=>{document.execCommand('copy');toast('Copiado.');}); }catch(e){ document.execCommand('copy'); toast('Copiado.'); } }
+async function novoCodigo(id){
+  const c=ADM.byId[id];
+  modal(`<h3>Gerar novo código</h3><p>A senha atual de <b>${esc(c.nome)}</b> deixará de funcionar e ela vai criar uma nova com o código gerado. Continuar?</p>
+    <div class="acts"><button class="btn ghost" onclick="closeModal()">Cancelar</button><button class="btn" onclick="doNovoCodigo('${id}')">Gerar código</button></div>`);
+}
+async function doNovoCodigo(id){ try{ await rpc('fer_admin_gerar_codigo',{p_token:S.token,p_id:id}); await loadAdmin(); mostrarConvite(id); }catch(e){ toast(e.message,5000); } }
+function excluirCol(id){
+  const c=ADM.byId[id];
+  modal(`<h3>Remover ${esc(c.nome)}</h3><p>${ADM.solByCol[id]?'Essa pessoa já tem solicitação, então ela será <b>desativada</b> (o histórico fica guardado).':'A pessoa será excluída do sistema.'}</p>
+    <div class="acts"><button class="btn ghost" onclick="closeModal()">Cancelar</button><button class="btn danger" onclick="doExcluirCol('${id}')">Remover</button></div>`);
+}
+async function doExcluirCol(id){ try{ const r=await rpc('fer_admin_excluir_colaborador',{p_token:S.token,p_id:id}); closeModal(); await loadAdmin(); toast(r==='desativado'?'Pessoa desativada.':'Pessoa excluída.'); }catch(e){ toast(e.message,5000); } }
+async function reativar(id){ const c=ADM.byId[id]; try{ await rpc('fer_admin_salvar_colaborador',{p_token:S.token,p:{...c,ativo:true}}); await loadAdmin(); toast('Pessoa reativada.'); }catch(e){ toast(e.message,5000); } }
+// ---- Configurações ----
+function tabCfg(){
+  const c=ADM.config;
+  return `<div class="card"><h2>Configurações do ciclo</h2>
+    <div class="row">
+      <label class="f">Ano das férias<input type="number" id="c-ano" value="${c.ano}" min="2026" max="2035" style="width:110px"></label>
+      <label class="f">Prazo para envio (opcional)<input type="date" id="c-prazo" value="${c.prazo||''}"></label>
+      <label class="small"><input type="checkbox" id="c-aberto" ${c.aberto?'checked':''}> Solicitações abertas</label>
+      <label class="small"><input type="checkbox" id="c-sexsab" ${c.bloquear_inicio_sex_sab?'checked':''}> Impedir início na sexta ou no sábado</label>
+    </div>
+    <label class="f" style="margin-top:12px">Aviso para a equipe (aparece no topo da tela de solicitação)<textarea id="c-aviso">${esc(c.aviso||'')}</textarea></label>
+    <p class="small muted">Regra fixa: ${c.dias_total} dias corridos, em até 2 períodos, menor parte com pelo menos ${c.min_parte} dias, 2 opções por período.</p>
+    <div id="cfg-msg"></div><button class="btn" onclick="salvarCfg()">Salvar configurações</button></div>`;
+}
+async function salvarCfg(){
+  const p={ano:Number($('c-ano').value),prazo:$('c-prazo').value,aberto:$('c-aberto').checked,bloquear_inicio_sex_sab:$('c-sexsab').checked,aviso:$('c-aviso').value};
+  try{ await rpc('fer_admin_salvar_config',{p_token:S.token,p}); await loadAdmin(); toast('Configurações salvas.'); }
+  catch(e){ $('cfg-msg').innerHTML=`<div class="msg err">${esc(e.message)}</div>`; }
+}
+// ---- Exportar ----
+function exportCSV(){
+  const q=v=>`"${String(v??'').replace(/"/g,'""')}"`;
+  const L=[['Nome','E-mail','Área','Executivo','Status','Divisão','Período','Opção','Início','Fim','Dias','Aprovada','Descartada','Sobreposições','Observação']];
+  ADM.colaboradores.filter(c=>c.ativo).sort((a,b)=>a.nome.localeCompare(b.nome)).forEach(c=>{
+    const s=ADM.solByCol[c.id];
+    if(!s){ L.push([c.nome,c.email,c.area,c.executivo?'Sim':'Não','Não enviou','','','','','','','','','','']); return; }
+    ADM.ops.filter(o=>o.sol.id===s.id).forEach(o=>L.push([c.nome,c.email,c.area,c.executivo?'Sim':'Não',STATUS[s.status],s.partes===1?`${s.dias_p1}`:`${s.dias_p1}+${s.dias_p2}`,o.periodo,o.opcao,br(o.inicio),br(o.fim),dn(o.fim)-dn(o.inicio)+1,o.aprovada?'Sim':'Não',o.desc?'Sim':'Não',o.conf.map(k=>`${k.x.col.nome} (${k.dias}d${k.x.aprovada?', aprovada':''})`).join('; '),s.observacao]));
+  });
+  const csv='﻿'+L.map(r=>r.map(q).join(';')).join('\r\n');
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'})); a.download=`ferias_${ADM.config.ano}.csv`; a.click();
+}
+
+boot();
+</script>
+</body>
+</html>
