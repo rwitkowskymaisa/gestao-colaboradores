@@ -60,7 +60,9 @@ textarea{width:100%;min-height:60px}
 .b-aprovada{background:var(--teal-suave);color:#17666b}
 .b-ajuste{background:var(--verm-suave);color:var(--vermelho)}
 .b-nao{background:#fff;color:var(--muted);border:1px solid var(--line)}
-.b-exec{background:var(--chumbo);color:#fff}
+.b-exec,.b-g-executivo{background:var(--chumbo);color:#fff}
+.b-g-suporte{background:var(--teal-suave);color:#17666b;border:1px solid var(--teal)}
+.b-g-outros{background:#fff;color:var(--chumbo);border:1px solid var(--prata)}
 .b-adm{background:var(--teal-esc);color:#fff}
 /* login */
 .login{max-width:400px;margin:56px auto;border-top:4px solid var(--vermelho)}
@@ -199,6 +201,11 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt
 const MESES = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
 const DSEM = ['dom','seg','ter','qua','qui','sex','sáb'];
 const TIPOS = {grande_evento:'Grande evento', evento_presencial:'Evento presencial', periodo_restrito:'Período restrito', outro:'Outro'};
+const GRUPOS = {geral:'Equipe geral', executivo:'Executivo', suporte:'Suporte', outros:'Outros'};
+const grupoDe = c => c.grupo || (c.executivo ? 'executivo' : 'geral');
+const aplica = (b, g) => !b.grupos || !b.grupos.length || b.grupos.includes(g);
+const nomeGrupos = b => (!b.grupos || !b.grupos.length) ? 'Toda a equipe' : b.grupos.map(g=>GRUPOS[g]||g).join(', ');
+const badgeGrupo = c => { const g=grupoDe(c); return g==='geral' ? '' : `<span class="badge b-g-${g}">${GRUPOS[g]}</span>`; };
 const STATUS = {pendente:'Aguardando aprovação', aprovada:'Aprovada', ajuste:'Ajuste solicitado'};
 function dn(s){ const [y,m,d]=s.split('-').map(Number); return Math.round(Date.UTC(y,m-1,d)/864e5); }
 function nd(n){ const t=new Date(n*864e5); return t.toISOString().slice(0,10); }
@@ -406,7 +413,7 @@ function renderColab(){
   h+=`<div class="card"><h2>Calendário ${cfg.ano}</h2>
     <div class="legend"><span><i style="background:var(--p11)"></i>${F.partes===1?'':'1º período · '}Opção 1</span><span><i style="background:var(--p12)"></i>${F.partes===1?'':'1º período · '}Opção 2</span>
     ${F.partes===2?'<span><i style="background:var(--p21)"></i>2º período · Opção 1</span><span><i style="background:var(--p22)"></i>2º período · Opção 2</span>':''}
-    <span><i style="background:var(--blk)"></i>Data travada</span>${ME.eu.executivo?'<span><i style="background:repeating-linear-gradient(45deg,var(--verm-suave) 0 3px,#fff 3px 6px)"></i>Travada para executivos</span>':''}</div>
+    <span><i style="background:var(--blk)"></i>Data travada</span>${ME.bloqueios.some(b=>b.grupos&&b.grupos.length)?'<span><i style="background:repeating-linear-gradient(45deg,var(--verm-suave) 0 3px,#fff 3px 6px)"></i>Travada para o seu grupo</span>':''}</div>
     <div class="cal">${calendario()}</div></div>`;
   $('v-colab').innerHTML=h;
 }
@@ -423,7 +430,7 @@ function calendario(){
       let cls='d'; let tip='';
       if(w===0||w===6) cls+=' we';
       if(s<=hj) cls+=' past';
-      if(bl.length){ cls+= bl.every(b=>b.publico==='executivos')?' blkx':' blk'; tip=bl.map(b=>`${b.motivo} (${TIPOS[b.tipo]})`).join(' | '); }
+      if(bl.length){ cls+= bl.every(b=>b.grupos&&b.grupos.length)?' blkx':' blk'; tip=bl.map(b=>`${b.motivo} (${TIPOS[b.tipo]})`).join(' | '); }
       else if(hit.length){ cls+=' o'+hit[0].k.replace('-',''); if(hit.length>1) cls+=' multi'; tip=hit.map(r=>r.k.replace('-','º período · opção ')).join(' | '); }
       h+=`<div class="${cls}" title="${esc(tip)}" onclick="clickDia('${s}')">${d}</div>`;
     }
@@ -467,7 +474,7 @@ function prepAdmin(){
       if(x.col.id===o.col.id || x.desc) return;
       const d=overlap(o.inicio,o.fim,x.inicio,x.fim); if(d) o.conf.push({x,dias:d});
     });
-    o.blq = ADM.bloqueios.filter(b=>(b.publico==='todos'||o.col.executivo) && overlap(o.inicio,o.fim,b.inicio,b.fim));
+    o.blq = ADM.bloqueios.filter(b=>aplica(b,grupoDe(o.col)) && overlap(o.inicio,o.fim,b.inicio,b.fim));
   });
 }
 function setTab(t){ A.tab=t; renderAdmin(); }
@@ -498,7 +505,7 @@ function renderAdmin(){
 function tabMapa(){
   const ano=ADM.config.ano, Z=A.zoom, d0=dn(`${ano}-01-01`), nD=dn(`${ano}-12-31`)-d0+1, W=nD*Z;
   const pos=s=>(dn(s)-d0)*Z;
-  const blqHtml=exec=>{ let blq=''; ADM.bloqueios.filter(b=>b.publico==='todos'||exec).forEach(b=>{ blq+=`<div class="tl-blk ${b.publico==='executivos'?'x':''}" style="left:${Math.max(0,pos(b.inicio))}px;width:${(dn(b.fim)-dn(b.inicio)+1)*Z}px" title="${esc(b.motivo)} · ${br(b.inicio)} a ${br(b.fim)} · ${b.publico==='executivos'?'só executivos':'todos'}"></div>`; }); return blq; };
+  const blqHtml=g=>{ let blq=''; ADM.bloqueios.filter(b=>aplica(b,g)).forEach(b=>{ blq+=`<div class="tl-blk ${b.grupos&&b.grupos.length?'x':''}" style="left:${Math.max(0,pos(b.inicio))}px;width:${(dn(b.fim)-dn(b.inicio)+1)*Z}px" title="${esc(b.motivo)} · ${br(b.inicio)} a ${br(b.fim)} · ${esc(nomeGrupos(b))}"></div>`; }); return blq; };
   let mh=''; for(let m=0;m<12;m++){ const s=`${ano}-${String(m+1).padStart(2,'0')}-01`; mh+=`<div class="tl-m" style="left:${pos(s)}px">${Z>=4?MESES[m]:MESES[m].slice(0,3)}</div>`; }
   // ocupação
   const occ=new Array(nD).fill(0), occA=new Array(nD).fill(0);
@@ -520,13 +527,13 @@ function tabMapa(){
       bars+=`<div class="${cls}" style="left:${pos(o.inicio)}px;width:${(dn(o.fim)-dn(o.inicio)+1)*Z}px" title="${esc(tip)}">${Z>=4?`P${o.periodo}·O${o.opcao}`:''}</div>`;
     });
     const st = s? `<span class="badge b-${s.status}" style="margin-left:4px">${s.status==='pendente'?'pend.':s.status==='aprovada'?'aprov.':'ajuste'}</span>` : '<span class="badge b-nao" style="margin-left:4px">não enviou</span>';
-    rows+=`<div class="tl-row"><div class="tl-name" title="${esc(c.nome)}">${esc(c.nome)}${c.executivo?' <span class="badge b-exec">exec</span>':''}${st}</div><div class="tl-track" style="width:${W}px">${blqHtml(c.executivo)}${bars}</div></div>`;
+    rows+=`<div class="tl-row"><div class="tl-name" title="${esc(c.nome)}">${esc(c.nome)} ${badgeGrupo(c)}${st}</div><div class="tl-track" style="width:${W}px">${blqHtml(grupoDe(c))}${bars}</div></div>`;
   });
   return `<div class="card"><div class="row" style="justify-content:space-between;margin-bottom:10px"><h2 style="margin:0">Mapa de ${ano}</h2>
     <div class="row"><label class="small"><input type="checkbox" ${A.soAprov?'checked':''} onchange="A.soAprov=this.checked;renderAdmin()"> Mostrar só aprovadas</label>
     <label class="f">Zoom<select onchange="A.zoom=Number(this.value);renderAdmin()">${[[3,'Ano'],[4,'Normal'],[7,'Detalhe'],[12,'Máximo']].map(([v,t])=>`<option value="${v}" ${A.zoom===v?'selected':''}>${t}</option>`).join('')}</select></label></div></div>
     <div class="legend"><span><i style="background:var(--chumbo)"></i>Opção 1 (linha de cima)</span><span><i style="background:var(--prata)"></i>Opção 2 (linha de baixo)</span><span><i style="background:var(--teal)"></i>Aprovada</span>
-    <span><i style="background:#fff;box-shadow:0 0 0 2px var(--vermelho)"></i>Sobrepõe outra pessoa</span><span><i style="background:rgba(187,36,62,.25)"></i>Travada (todos)</span><span><i style="background:repeating-linear-gradient(45deg,rgba(187,36,62,.3) 0 3px,#fff 3px 6px)"></i>Travada (só executivos)</span><span>Rótulo P1/P2 = período</span></div>
+    <span><i style="background:#fff;box-shadow:0 0 0 2px var(--vermelho)"></i>Sobrepõe outra pessoa</span><span><i style="background:rgba(187,36,62,.25)"></i>Travada (todos)</span><span><i style="background:repeating-linear-gradient(45deg,rgba(187,36,62,.3) 0 3px,#fff 3px 6px)"></i>Travada (só alguns grupos)</span><span>Rótulo P1/P2 = período</span></div>
     <div class="legend"><b style="color:var(--chumbo)">Linha "Ocupação":</b><span><i style="background:#EAE9E8"></i>1 pessoa com opção</span><span><i style="background:#D4EFF1"></i>1 aprovada</span><span><i style="background:#F5DCE1"></i>2+ pessoas com opção</span><span><i style="background:#BB243E"></i>2+ aprovadas no mesmo dia</span></div>
     <div class="tl-wrap" id="tlw"><div class="tl" style="width:${W+190}px">
       <div class="tl-row tl-head"><div class="tl-name"><b>Pessoa</b></div><div class="tl-track" style="width:${W}px">${mh}</div></div>
@@ -547,8 +554,8 @@ function tabSol(){
     if(f==='nao' && s) return; if(['pendente','aprovada','ajuste'].includes(f) && (!s||s.status!==f)) return;
     if(f==='conf' && (!s || !ADM.ops.some(o=>o.sol.id===s.id && o.conf.length))) return;
     n++;
-    if(!s){ h+=`<div class="req"><div class="req-h"><b>${esc(c.nome)}</b>${c.executivo?'<span class="badge b-exec">executivo</span>':''}<span class="badge b-nao">Não enviou</span><span class="muted small">${esc(c.email)}</span></div></div>`; return; }
-    h+=`<div class="req st-${s.status}"><div class="req-h"><b>${esc(c.nome)}</b>${c.area?`<span class="muted small">${esc(c.area)}</span>`:''}${c.executivo?'<span class="badge b-exec">executivo</span>':''}
+    if(!s){ h+=`<div class="req"><div class="req-h"><b>${esc(c.nome)}</b>${badgeGrupo(c)}<span class="badge b-nao">Não enviou</span><span class="muted small">${esc(c.email)}</span></div></div>`; return; }
+    h+=`<div class="req st-${s.status}"><div class="req-h"><b>${esc(c.nome)}</b>${c.area?`<span class="muted small">${esc(c.area)}</span>`:''}${badgeGrupo(c)}
       <span class="badge b-${s.status}">${STATUS[s.status]}</span><span class="muted small">${s.partes===1?`1 período de ${s.dias_p1} dias`:`2 períodos: ${s.dias_p1} + ${s.dias_p2} dias`} · enviada ${fmtDT(s.created_at)}${s.updated_at!==s.created_at?` · atualizada ${fmtDT(s.updated_at)}`:''}</span></div>`;
     if(s.observacao) h+=`<div class="msg info" style="margin:6px 0">💬 ${esc(s.observacao)}</div>`;
     if(s.status==='ajuste' && s.comentario_admin) h+=`<div class="msg err" style="margin:6px 0">Ajuste pedido: ${esc(s.comentario_admin)}</div>`;
@@ -588,18 +595,18 @@ function tabBlq(){
       <label class="f">Fim<input type="date" id="b-fim" value="${e.fim||''}"></label>
       <label class="f" style="flex:1;min-width:220px">Motivo / evento<input type="text" id="b-mot" value="${esc(e.motivo||'')}" placeholder="Ex.: Artmed Experience" style="width:100%"></label>
       <label class="f">Tipo<select id="b-tipo">${Object.entries(TIPOS).map(([k,t])=>`<option value="${k}" ${(e.tipo||'grande_evento')===k?'selected':''}>${t}</option>`).join('')}</select></label>
-      <label class="f">Vale para<select id="b-pub"><option value="todos" ${e.publico!=='executivos'?'selected':''}>Toda a equipe</option><option value="executivos" ${e.publico==='executivos'?'selected':''}>Só executivos</option></select></label>
+      <div class="f" style="font-size:12px;color:var(--muted)">Vale para<div class="row" style="gap:10px;margin-top:6px">${Object.entries(GRUPOS).map(([k,t])=>`<label class="small" style="color:var(--chumbo)"><input type="checkbox" class="b-grp" value="${k}" ${(!e.grupos||!e.grupos.length||e.grupos.includes(k))?'checked':''}> ${t}</label>`).join('')}</div></div>
       <button class="btn" onclick="salvarBlq()">${e.id?'Salvar':'Travar'}</button>${e.id?'<button class="btn ghost" onclick="A.editBlq=null;renderAdmin()">Cancelar</button>':''}
     </div>
-    <p class="small muted">Atalho: <a href="#" onclick="event.preventDefault();preBlq('${ano}-01-01','${ano}-01-31','Janeiro — período restrito para executivos','periodo_restrito','executivos')">travar janeiro para executivos</a></p>
+    <p class="small muted">Deixe todos os grupos marcados para travar para toda a equipe. Para travar só para uma pessoa específica, coloque-a no grupo "Outros" (aba Equipe) e marque só "Outros" aqui.<br>Atalho: <a href="#" onclick="event.preventDefault();preBlq('${ano}-01-01','${ano}-01-31','Janeiro — período restrito para executivos','periodo_restrito',['executivo'])">travar janeiro para executivos</a></p>
     <div id="b-msg"></div></div>`;
   h+=`<div class="card"><h2>Datas travadas (${ADM.bloqueios.length})</h2>`;
   if(!ADM.bloqueios.length) h+=`<p class="muted">Nenhuma data travada ainda.</p>`;
   else{
     h+=`<table><tr><th>Período</th><th>Motivo</th><th>Tipo</th><th>Vale para</th><th>Solicitações afetadas</th><th></th></tr>`;
     ADM.bloqueios.forEach(b=>{
-      const af=ADM.ops.filter(o=>!o.desc && (b.publico==='todos'||o.col.executivo) && overlap(o.inicio,o.fim,b.inicio,b.fim));
-      h+=`<tr><td>${br(b.inicio)} a ${br(b.fim)}<div class="small muted">${dn(b.fim)-dn(b.inicio)+1} dia(s)</div></td><td>${esc(b.motivo)}</td><td>${TIPOS[b.tipo]}</td><td>${b.publico==='executivos'?'<span class="badge b-exec">Só executivos</span>':'Toda a equipe'}</td>
+      const af=ADM.ops.filter(o=>!o.desc && aplica(b,grupoDe(o.col)) && overlap(o.inicio,o.fim,b.inicio,b.fim));
+      h+=`<tr><td>${br(b.inicio)} a ${br(b.fim)}<div class="small muted">${dn(b.fim)-dn(b.inicio)+1} dia(s)</div></td><td>${esc(b.motivo)}</td><td>${TIPOS[b.tipo]}</td><td>${b.grupos&&b.grupos.length?b.grupos.map(g=>`<span class="badge b-g-${g}">${GRUPOS[g]||g}</span>`).join(' '):'Toda a equipe'}</td>
         <td>${af.length?`<span style="color:var(--err)">${af.map(o=>`${esc(o.col.nome)} (P${o.periodo} op.${o.opcao}${o.aprovada?', aprovada':''})`).join('<br>')}</span>`:'<span class="muted">—</span>'}</td>
         <td style="white-space:nowrap"><button class="btn ghost sm" onclick='A.editBlq=${JSON.stringify(b).replace(/'/g,"&#39;")};renderAdmin();window.scrollTo(0,0)'>Editar</button> <button class="btn danger sm" onclick="excluirBlq('${b.id}')">Excluir</button></td></tr>`;
     });
@@ -607,9 +614,10 @@ function tabBlq(){
   }
   return h+`</div>`;
 }
-function preBlq(i,f,m,t,p){ A.editBlq={inicio:i,fim:f,motivo:m,tipo:t,publico:p}; renderAdmin(); }
+function preBlq(i,f,m,t,g){ A.editBlq={inicio:i,fim:f,motivo:m,tipo:t,grupos:g}; renderAdmin(); }
 async function salvarBlq(){
-  const p={id:A.editBlq?.id||null,inicio:$('b-ini').value,fim:$('b-fim').value,motivo:$('b-mot').value,tipo:$('b-tipo').value,publico:$('b-pub').value};
+  const p={id:A.editBlq?.id||null,inicio:$('b-ini').value,fim:$('b-fim').value,motivo:$('b-mot').value,tipo:$('b-tipo').value,grupos:[...document.querySelectorAll('.b-grp:checked')].map(x=>x.value)};
+  if(!p.grupos.length){ $('b-msg').innerHTML='<div class="msg err">Marque pelo menos um grupo.</div>'; return; }
   try{ await rpc('fer_admin_salvar_bloqueio',{p_token:S.token,p}); A.editBlq=null; await loadAdmin(); toast('Datas travadas salvas.'); }
   catch(e){ $('b-msg').innerHTML=`<div class="msg err">${esc(e.message)}</div>`; }
 }
@@ -622,15 +630,15 @@ function tabEq(){
     <label class="f" style="min-width:200px;flex:1">Nome<input type="text" id="e-nome" value="${esc(e.nome||'')}" style="width:100%"></label>
     <label class="f" style="min-width:220px;flex:1">E-mail<input type="email" id="e-email" value="${esc(e.email||'')}" style="width:100%"></label>
     <label class="f">Área / cargo<input type="text" id="e-area" value="${esc(e.area||'')}"></label>
-    <label class="small"><input type="checkbox" id="e-exec" ${e.executivo?'checked':''}> Executivo</label>
+    <label class="f">Grupo<select id="e-grupo">${Object.entries(GRUPOS).map(([k,t])=>`<option value="${k}" ${grupoDe(e)===k?'selected':''}>${t}</option>`).join('')}</select></label>
     <label class="small"><input type="checkbox" id="e-adm" ${e.admin?'checked':''}> Administrador</label>
     <button class="btn" onclick="salvarCol()">${e.id?'Salvar':'Adicionar'}</button>${e.id?'<button class="btn ghost" onclick="A.editCol=null;renderAdmin()">Cancelar</button>':''}
-  </div><p class="small muted">Ao adicionar, o sistema gera um código de 6 dígitos. A pessoa usa esse código em "Primeiro acesso" para criar a própria senha. Marque "Executivo" para aplicar as travas exclusivas de executivos.</p><div id="e-msg"></div></div>`;
-  h+=`<div class="card"><h2>Equipe (${ADM.colaboradores.filter(c=>c.ativo).length} ativos)</h2><table><tr><th>Nome</th><th>E-mail</th><th>Área</th><th>Perfil</th><th>Acesso</th><th>Solicitação</th><th></th></tr>`;
+  </div><p class="small muted">Ao adicionar, o sistema gera um código de 6 dígitos. A pessoa usa esse código em "Primeiro acesso" para criar a própria senha. O grupo (Executivo, Suporte, Outros ou Equipe geral) define quais datas travadas valem para a pessoa. "Administrador" é separado: dá acesso a este painel.</p><div id="e-msg"></div></div>`;
+  h+=`<div class="card"><h2>Equipe (${ADM.colaboradores.filter(c=>c.ativo).length} ativos)</h2><table><tr><th>Nome</th><th>E-mail</th><th>Área</th><th>Grupo</th><th>Acesso</th><th>Solicitação</th><th></th></tr>`;
   ADM.colaboradores.forEach(c=>{
     const s=ADM.solByCol[c.id];
     h+=`<tr style="${c.ativo?'':'opacity:.5'}"><td>${esc(c.nome)}${c.ativo?'':' <span class="badge b-nao">inativo</span>'}</td><td>${esc(c.email)}</td><td>${esc(c.area||'')}</td>
-      <td>${c.executivo?'<span class="badge b-exec">executivo</span> ':''}${c.admin?'<span class="badge b-adm">admin</span>':''}</td>
+      <td>${badgeGrupo(c)||'<span class="muted small">Equipe geral</span>'} ${c.admin?'<span class="badge b-adm">admin</span>':''}</td>
       <td>${c.tem_senha?'<span style="color:var(--ok)">✓ senha criada</span>':(c.codigo_acesso?`código <span class="code" style="font-size:13px">${c.codigo_acesso}</span> <button class="btn ghost sm" onclick="mostrarConvite('${c.id}')">convite</button>`:'—')}</td>
       <td>${s?`<span class="badge b-${s.status}">${STATUS[s.status]}</span>`:'<span class="badge b-nao">não enviou</span>'}</td>
       <td style="white-space:nowrap"><button class="btn ghost sm" onclick="editCol('${c.id}')">Editar</button>
@@ -642,7 +650,7 @@ function tabEq(){
 function editCol(id){ A.editCol={...ADM.byId[id]}; renderAdmin(); window.scrollTo(0,0); }
 async function salvarCol(){
   const e=A.editCol||{};
-  const p={id:e.id||null,nome:$('e-nome').value,email:$('e-email').value,area:$('e-area').value,executivo:$('e-exec').checked,admin:$('e-adm').checked,ativo:e.id?e.ativo:true};
+  const p={id:e.id||null,nome:$('e-nome').value,email:$('e-email').value,area:$('e-area').value,grupo:$('e-grupo').value,admin:$('e-adm').checked,ativo:e.id?e.ativo:true};
   try{ const r=await rpc('fer_admin_salvar_colaborador',{p_token:S.token,p}); A.editCol=null; await loadAdmin();
     if(!e.id && r.codigo_acesso) mostrarConvite(r.id); else toast('Dados salvos.'); }
   catch(err){ $('e-msg').innerHTML=`<div class="msg err">${esc(err.message)}</div>`; }
@@ -690,11 +698,11 @@ async function salvarCfg(){
 // ---- Exportar ----
 function exportCSV(){
   const q=v=>`"${String(v??'').replace(/"/g,'""')}"`;
-  const L=[['Nome','E-mail','Área','Executivo','Status','Divisão','Período','Opção','Início','Fim','Dias','Aprovada','Descartada','Sobreposições','Observação']];
+  const L=[['Nome','E-mail','Área','Grupo','Status','Divisão','Período','Opção','Início','Fim','Dias','Aprovada','Descartada','Sobreposições','Observação']];
   ADM.colaboradores.filter(c=>c.ativo).sort((a,b)=>a.nome.localeCompare(b.nome)).forEach(c=>{
     const s=ADM.solByCol[c.id];
-    if(!s){ L.push([c.nome,c.email,c.area,c.executivo?'Sim':'Não','Não enviou','','','','','','','','','','']); return; }
-    ADM.ops.filter(o=>o.sol.id===s.id).forEach(o=>L.push([c.nome,c.email,c.area,c.executivo?'Sim':'Não',STATUS[s.status],s.partes===1?`${s.dias_p1}`:`${s.dias_p1}+${s.dias_p2}`,o.periodo,o.opcao,br(o.inicio),br(o.fim),dn(o.fim)-dn(o.inicio)+1,o.aprovada?'Sim':'Não',o.desc?'Sim':'Não',o.conf.map(k=>`${k.x.col.nome} (${k.dias}d${k.x.aprovada?', aprovada':''})`).join('; '),s.observacao]));
+    if(!s){ L.push([c.nome,c.email,c.area,GRUPOS[grupoDe(c)],'Não enviou','','','','','','','','','','']); return; }
+    ADM.ops.filter(o=>o.sol.id===s.id).forEach(o=>L.push([c.nome,c.email,c.area,GRUPOS[grupoDe(c)],STATUS[s.status],s.partes===1?`${s.dias_p1}`:`${s.dias_p1}+${s.dias_p2}`,o.periodo,o.opcao,br(o.inicio),br(o.fim),dn(o.fim)-dn(o.inicio)+1,o.aprovada?'Sim':'Não',o.desc?'Sim':'Não',o.conf.map(k=>`${k.x.col.nome} (${k.dias}d${k.x.aprovada?', aprovada':''})`).join('; '),s.observacao]));
   });
   const csv='﻿'+L.map(r=>r.map(q).join(';')).join('\r\n');
   const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'})); a.download=`ferias_${ADM.config.ano}.csv`; a.click();
